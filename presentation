@@ -1,0 +1,11 @@
+#!/bin/bash
+# a script to run pandoc
+# inputfile: .md file
+# output: .pdf with the same name
+
+Usage(){ echo "$0; This script require a source file"; exit 1; }
+inputfile=$1
+# read inputfile
+outputfile=${inputfile/.md/.pdf}
+
+pandoc $inputfile -t beamer -o $outputfile
