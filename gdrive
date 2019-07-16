@@ -1,8 +1,8 @@
 #!/bin/bash
 # a script for copying from GoogleDrive using rclone
-# input: a folder from Google Drive to copy onto this computer 
- 
+# input: a folder from Google Drive to copy onto this computer
+
 Usage(){ echo "$0; This script requires a source google drive folder"; exit 1; }
 inputfolder=$1
- 
+
 rclone copy remote:$inputfolder ~/Documents/GoogleDrive/$inputfolder
