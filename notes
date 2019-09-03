@@ -1,0 +1,18 @@
+#!/bin/bash
+# a script for copying from GoogleDrive using rclone
+# input: a folder from Google Drive to copy onto this computer
+
+Usage(){ echo "$0; This script requires a file name"; exit 1; }
+filename=~/Documents/notes/$1.md
+touch filename
+cat <<EOT >> ${filename}
+% title
+% Liam Timms
+% \today
+---
+theme: Singapore
+geometry: margin=.5input
+---
+EOT
+
+nvim ${filename}
