@@ -11,7 +11,7 @@ cat <<EOT >> ${filename}
 % \today
 ---
 theme: Singapore
-geometry: margin=.5input
+geometry: margin=.5in
 ---
 EOT
 
