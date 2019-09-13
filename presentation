@@ -1,7 +1,10 @@
 #!/bin/bash
-# a script to run pandoc
-# inputfile: .md file
-# output: .pdf with the same name
+# Purpose: converts markdown into formatted text pdf and a pdf slide-show
+# Input  : a markdown file for use with pandoc
+# Author : Liam Timms
+# Date   : 9/13/19
+# Version: 1
+MINPARAMS=1
 
 Usage(){ echo "$0; This script require a source file"; exit 1; }
 inputfile=$1
