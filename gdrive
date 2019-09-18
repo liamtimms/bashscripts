@@ -6,10 +6,27 @@
 # Version: 1
 MINPARAMS=1
 
-Usage(){ echo "$0; This script requires a source google drive folder"; exit 1; }
-inputfolder=$1
+#Usage(){ echo "$0; This script requires a source google drive folder"; exit 1; }
+operation=$1
+inputfolder=$2
+currentfolder=pwd
 
+# CLONE
 rclone copy remote:$inputfolder ~/Documents/GoogleDrive/$inputfolder
+
+# PUSH
+rclone copy remote:$inputfolder ~/Documents/GoogleDrive/$inputfolder
+
+# PULL
+localpath=~/Documents/GoogleDrive/
+inputfolder=${currentfolder#"$localpath"}
+echo "pulling remote version of:"
+echo $inputfolder
+rclone copy remote:$inputfolder ~/Documents/GoogleDrive/$inputfolder
+
+# LIST
+
+
 # TODO: add check, push, pull, capabilities. Maybe just make this like git?
 # rclone check source:path dest:path
 # push - rclone copy source:localpath dest:path
