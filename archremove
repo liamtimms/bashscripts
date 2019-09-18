@@ -1,0 +1,3 @@
+#!/bin/bash
+MINPARAMS=1
+pacman -Rns $1

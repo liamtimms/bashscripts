@@ -1,0 +1,4 @@
+#!/bin/bash
+fwupdmgr refresh
+fwupdmgr get-updates
+yay -Syu
