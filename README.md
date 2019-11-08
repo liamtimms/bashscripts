@@ -2,6 +2,13 @@
 
 These are basic quality of life bash scripts for things I do regularly.
 
+To install most dependencies on Arch run:
+
+    sudo pacman -S --needed pacman-contrib fwupdmgr rclone pandoc neovim reflector
+
+yay must be manually installed if you haven't already installed it
+
+before running rclone requires manual intervention if not already set up.
 ## archupdate
 * usage: updates Arch Linux via yay, updates vim-plug and any plugins, cleans up pacman cache, if it hasn't been run in a week it first updates the mirror list and also updates firmware if applicable
 * dependencies: only for Arch Linux, reflector, fwupdmgr, yay, pacman-contrib, neovim with vim-plug (see my dotfiles)
@@ -23,8 +30,3 @@ much of this could be accomplished with pacman hooks but not all of this concern
 * usage: takes markdown file and converts it to a pdf document (`filename_notes.pdf`) and a pdf slide show (`filename_slides.pdf`). Note that the markdown is carefully broken up by headers and subheaders there is a high likelyhood of text and images overflowing on the slides.
 * dependencies: pandoc
 
-to install most dependencies on Arch run:
-    sudo pacman -S --needed pacman-contrib fwupdmgr rclone pandoc neovim reflector
-yay must be manually installed if you haven't already installed it
-
-before running rclone requires manual intervention if not already set up.
