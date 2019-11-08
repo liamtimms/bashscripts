@@ -1,4 +1,17 @@
 #!/bin/bash
-fwupdmgr refresh
-fwupdmgr get-updates
-yay -Syu
+# save and update mirror list and maybe firmware if it's been a week
+if [[ $(find /etc/pacman.d/mirrorlist -mtime 6 -print) ]]
+then
+    echo "Updating mirrorlist"
+    sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+    sudo reflector --country 'United States' --country 'Canada' --latest 200 \
+    --age 24 --sort rate --save /etc/pacman.d/mirrorlist
+    fwupdmgr refresh
+    fwupdmgr get-updates
+    yay -Syyu
+else
+    yay -Syu
+fi
+nvim --headless +PlugUpgrade +PlugUpdate +qa
+echo "\n"
+paccache -r
