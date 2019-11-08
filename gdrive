@@ -2,8 +2,8 @@
 # Purpose: a script for copying from GoogleDrive using rclone
 # Input  : a folder from Google Drive to copy onto this computer
 # Author : Liam Timms
-# Date   : 9/13/19
-# Version: 1
+# Date   : 10/16/19
+# Version: 1.1
 MINPARAMS=1
 
 #Usage(){ echo "$0; This script requires a source google drive folder"; exit 1; }
@@ -11,18 +11,42 @@ operation=$1
 inputfolder=$2
 currentfolder=pwd
 
-# CLONE
-rclone copy remote:$inputfolder ~/Documents/GoogleDrive/$inputfolder
-
-# PUSH
-rclone copy remote:$inputfolder ~/Documents/GoogleDrive/$inputfolder
-
-# PULL
 localpath=~/Documents/GoogleDrive/
 inputfolder=${currentfolder#"$localpath"}
+
+# STATUS
+if $1="check"
+then
+rclone check $currentfolder remote:${currentfolder##*/GoogleDrive/}
+fi
+
+# rclone syntax is like:
+# Syntax: [options] subcommand <parameters> <parameters...>
+
+
+# CLONE
+if $1="clone"
+then
+echo "Cloning into ~/Documents/GoogleDrive/"
+echo $inputfolder
+rclone copy remote:$inputfolder ~/Documents/GoogleDrive/$inputfolder -P
+fi
+
+# PUSH
+if $1="push"
+then
+echo "pushing local version of:"
+echo $inputfolder
+rclone copy remote:$inputfolder ~/Documents/GoogleDrive/$inputfolder -P
+fi
+
+# PULL
+if $1="push"
+then
 echo "pulling remote version of:"
 echo $inputfolder
-rclone copy remote:$inputfolder ~/Documents/GoogleDrive/$inputfolder
+rclone copy remote:$inputfolder ~/Documents/GoogleDrive/$inputfolder -P
+fi
 
 # LIST
 
