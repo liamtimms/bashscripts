@@ -1,17 +1,33 @@
 #!/bin/bash
-# save and update mirror list and maybe firmware if it's been a week
+# save and update mirror list, firmware and this repo and nvim plugs if it's been a week
+# else, just run a normal update. Either way, clean up the pacman cache afterwards.
 if [[ $(find /etc/pacman.d/mirrorlist -mtime 6 -print) ]]
 then
-    echo "Updating mirrorlist"
+    echo -e "Updating: mirrorlist"
     sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
     sudo reflector --country 'United States' --country 'Canada' --latest 200 \
     --age 24 --sort rate --save /etc/pacman.d/mirrorlist
+    echo -e "\n"
+    echo -e "Updating: firmware"
+    echo -e "\n"
     fwupdmgr refresh
     fwupdmgr get-updates
+    echo -e "\n"
+    echo -e "Updating: neovim plugins"
+    echo -e "\n"
+    nvim --headless +PlugUpgrade +PlugUpdate +qa
+    echo -e "\n"
+    echo -e "Updating: Liam's bashscripts"
+    echo -e "\n"
+    git -C ~/bin/bashscripts pull
+    echo -e "\n"
+    echo -e "Updating: Arch Linux databases and packages"
+    echo -e "\n"
     yay -Syyu
 else
+    echo -e "\n"
+    echo -e "Updating: Arch Linux"
+    echo -e "\n"
     yay -Syu
 fi
-nvim --headless +PlugUpgrade +PlugUpdate +qa
-echo "\n"
 paccache -r
