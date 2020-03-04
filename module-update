@@ -1,0 +1,10 @@
+#!/bin/bash
+
+icon="☑️"
+n=$(checkupdates | wc -l)
+
+if (( n > 10 )); then
+    icon="🔼"
+fi
+
+echo $icon
