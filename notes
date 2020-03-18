@@ -11,7 +11,7 @@ filename=~/Documents/notes/$1.md
 if [ -f "${filename}" ]; then
     nvim ${filename}
 else
-touch filename
+touch ${filename}
 cat <<EOT >> ${filename}
 % title
 % Liam Timms
