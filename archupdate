@@ -25,7 +25,6 @@ then
     echo -e "\n"
     yay -Syyu
 else
-    echo -e "\n"
     echo -e "Updating: Arch Linux"
     echo -e "\n"
     yay -Syu

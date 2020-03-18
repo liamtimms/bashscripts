@@ -1,0 +1,7 @@
+#!/bin/bash
+
+n=$(checkupdates | wc -l)
+p=$(expr $n \> 20)
+percentage=$(expr $p \* 100)
+
+printf '%s\n' '{"class":"'"$percentage"'","percentage":'"$percentage"'}'
