@@ -1,7 +1,7 @@
 #!/bin/bash
 # save and update mirror list, firmware and this repo and nvim plugs if it's been a week
 # else, just run a normal update. Either way, clean up the pacman cache afterwards.
-if [[ $(find /etc/pacman.d/mirrorlist -mtime 6 -print) ]]
+if [[ $(find /etc/pacman.d/mirrorlist -mtime +6 -print) ]]
 then
     echo -e "Updating: mirrorlist"
     sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup

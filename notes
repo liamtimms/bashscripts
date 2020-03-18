@@ -8,6 +8,9 @@ MINPARAMS=1
 
 Usage(){ echo "$0; This script requires a file name"; exit 1; }
 filename=~/Documents/notes/$1.md
+if [ -f "${filename}" ]; then
+    nvim ${filename}
+else
 touch filename
 cat <<EOT >> ${filename}
 % title
@@ -20,3 +23,5 @@ geometry: margin=.5in
 EOT
 
 nvim ${filename}
+fi
+
