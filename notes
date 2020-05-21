@@ -4,13 +4,18 @@
 # Author : Liam Timms
 # Date   : 9/13/19
 # Version: 1
-MINPARAMS=1
 
-Usage(){ echo "$0; This script requires a file name"; exit 1; }
-filename=~/Documents/notes/$1.md
+if [ -z "$1" ]; then
+    cd ~/Documents/notes
+    filename=$(ls *.md | fzf -m --preview='HEAD -10 {}')
+else
+    filename=~/Documents/notes/$1.md
+fi
+
 if [ -f "${filename}" ]; then
     nvim ${filename}
 else
+
 touch ${filename}
 cat <<EOT >> ${filename}
 % title
