@@ -24,6 +24,7 @@ then
     echo -e "Updating: Arch Linux databases and packages"
     echo -e "\n"
     yay -Syyu
+    sudo pacdiff
 else
     echo -e "Updating: Arch Linux"
     echo -e "\n"
