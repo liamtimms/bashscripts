@@ -7,13 +7,14 @@
 
 if [ -z "$1" ]; then
     cd ~/Documents/notes
-    filename=$(ls *.md | fzf -m --preview='HEAD -10 {}')
+    filename=$(ls *.md | fzf -m --preview='head -10 {}')
+    nvim ${filename}
 else
-    filename=~/Documents/notes/$1.md
-fi
+
+filename=~/Documents/notes/$1.md
 
 if [ -f "${filename}" ]; then
-    nvim ${filename}
+nvim ${filename}
 else
 
 touch ${filename}
@@ -28,5 +29,9 @@ geometry: margin=.5in
 EOT
 
 nvim ${filename}
+
 fi
+
+fi
+
 
