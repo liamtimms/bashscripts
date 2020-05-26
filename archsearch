@@ -1,0 +1,4 @@
+#!/bin/bash
+# cribbed from Conner McD
+
+sudo pacman -S $(pacman -Ssq | fzf -m --preview="pacman -Si {}" --bind=space:toggle-preview)
