@@ -1,0 +1,3 @@
+#!/bin/bash
+
+pacman -Qil $(pacman -Qq | fzf -m --preview="pacman -Qi {}" --bind=space:toggle-preview)
