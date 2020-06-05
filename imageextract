@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for file in $(find -name \*.pdf)
+do
+    echo $file
+    pdfimages -all "${file}" images/${file}-
+done
