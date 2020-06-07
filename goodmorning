@@ -1,0 +1,7 @@
+#!/bin/bash
+
+espeak "Good morning, Liam."
+curl wttr.in
+sleep 5m
+gnome-pomodoro --start
+notes todo
