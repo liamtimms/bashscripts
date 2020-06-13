@@ -1,0 +1,10 @@
+#!/bin/bash
+# pandoc conversion with entr to enable live previews
+MINPARAMS=1
+
+Usage(){ echo "$0; This script requires a source file"; exit 1; }
+inputfile=$1
+pc="pandoc -N -o temp.pdf ${inputfile}"
+$pc
+zathura temp.pdf &
+echo ${inputfile} | entr -sc "${pc}"
