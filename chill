@@ -4,4 +4,4 @@
 # Author : Liam Timms
 # Date   : 1/25/20
 # Version: 1
-mpv --no-video https://www.youtube.com/watch?v=5qap5aO4i9A
+mpv --volume=50 --no-video https://www.youtube.com/watch?v=5qap5aO4i9A
