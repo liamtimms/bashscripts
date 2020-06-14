@@ -2,8 +2,6 @@
 # Purpose: creates markdown file with headings for note taking in notes folder
 # Input  : name of the markdown file
 # Author : Liam Timms
-# Date   : 9/13/19
-# Version: 1
 
 if [ -z "$1" ]; then
     cd ~/Documents/notes

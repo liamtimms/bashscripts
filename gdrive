@@ -2,8 +2,6 @@
 # Purpose: a script for copying from GoogleDrive using rclone
 # Input  : a folder from Google Drive to copy onto this computer
 # Author : Liam Timms
-# Date   : 10/16/19
-# Version: 1.1
 MINPARAMS=1
 
 localpath=~/Documents/GoogleDrive/
