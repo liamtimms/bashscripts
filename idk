@@ -4,6 +4,8 @@ MINPARAMS=1
 Usage(){ echo "$0; This script gives info on a command"; exit 1; }
 inputcommand=$1
 
+whatis ${inputcommand}
+
 # cheat.sh
 curl cheat.sh/${inputcommand}
 
