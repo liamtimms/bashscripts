@@ -1,6 +1,14 @@
 #!/bin/bash
 # save and update mirror list, firmware and this repo and nvim plugs if it's been a week
 # else, just run a normal update. Either way, clean up the pacman cache afterwards.
+
+last_upgrade=$(tac /var/log/pacman.log |
+  grep -m 1 'full system upgrade' |
+  cut -d ' ' -f 1 | tr -d '[]')
+t1=$(date +%s -d $last_upgrade)
+t2=$(date +%s)
+echo "$(((t2 - t1) / 86400)) days since last upgrade"
+
 if [[ $(find /etc/pacman.d/mirrorlist -mtime +6 -print) ]]
 then
     echo -e "Updating: mirrorlist"
