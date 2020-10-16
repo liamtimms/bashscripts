@@ -1,3 +1,6 @@
 #!/bin/bash
+program=$(pacman -Qq | fzf -m --preview="pacman -Qi {}" --bind=space:toggle-preview)
 
-pacman -Qi $(pacman -Qq | fzf -m --preview="pacman -Qi {}" --bind=space:toggle-preview)
+if [ -n "$program" ] ; then
+    sudo pacman -Qi $program
+fi
