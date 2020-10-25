@@ -9,7 +9,5 @@ outputfile=${inputfile/.docx/.md}
 outputmedia=${inputfile/.docx/}
 echo "working..."
 pandoc --extract-media $outputmedia --wrap=none -N $inputfile -o $outputfile
-# move every sentence to new line to allow easier git tracking
-sed -i 's/[.!?]  */&\n/g' $outputfile
 echo "done"
 
