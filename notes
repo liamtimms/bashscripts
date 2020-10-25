@@ -6,13 +6,13 @@
 if [ -z "$1" ]; then
     cd ~/Documents/notes
     filename=$(ls *.md | fzf -m --preview='head -10 {}')
-    nvim ${filename}
+    $EDITOR ${filename}
 else
 
 filename=~/Documents/notes/$1.md
 
 if [ -f "${filename}" ]; then
-nvim ${filename}
+$EDITOR ${filename}
 else
 
 touch ${filename}
@@ -26,7 +26,7 @@ geometry: margin=.5in
 ---
 EOT
 
-nvim ${filename}
+$EDITOR ${filename}
 
 fi
 
