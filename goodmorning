@@ -2,6 +2,7 @@
 
 espeak "Good morning, Liam."
 curl wttr.in
+grep "\[\s\]" ~/Documents/notes/todo.md
 sleep 5m
 gnome-pomodoro --start
 notes todo
