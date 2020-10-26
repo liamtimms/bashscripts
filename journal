@@ -1,0 +1,38 @@
+#!/bin/bash
+
+cd ~/Documents/notes/journal
+
+printf -v d '%(%Y-%m-%d)T' -1
+filename="${d}.md"
+
+if [ -f "${filename}" ]; then
+nvim ${filename}
+else
+
+touch ${filename}
+cat <<EOT >> ${filename}
+% Journal for ${d}
+% Liam Timms
+
+# Tasks
+## Completed
+1.
+2.
+3.
+
+## Not Completed (and why)
+1.
+2.
+3.
+
+# Thoughts
+## Reflections
+
+## Goals For Tomorrow
+EOT
+
+nvim ${filename}
+
+fi
+
+
