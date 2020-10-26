@@ -1,9 +1,0 @@
-#!/bin/bash
-
-videoname=$(grep -F viewEventTitle ISMRM.html | sed 's/<[^>]*>//g' | tr ' ' '_')
-echo ${videoname}
-
-videourl=$(grep -Eo "https://view.vzaar.com/[0-9]*" ISMRM.html)
-echo ${videourl}
-
-youtube-dl -o ${videoname}.mp4 ${videourl}
