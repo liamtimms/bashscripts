@@ -4,7 +4,7 @@ MINPARAMS=1
 
 Usage(){ echo "$0; This script requires a source file"; exit 1; }
 inputfile=$1
-pc="pandoc --filter pandoc-crossref -C -N -o temp.pdf ${inputfile}"
+pc="pandoc --filter pandoc-crossref -C -N --highlight-style zenburn -o temp.pdf ${inputfile}"
 $pc
 zathura temp.pdf &
 echo ${inputfile} | entr -sc "${pc}"
