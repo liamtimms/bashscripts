@@ -1,0 +1,8 @@
+#!/bin/bash
+# from https://gist.github.com/spacecowb0y/25284cd9a47b987694d4
+
+gource --key --highlight-users --seconds-per-day 0.1 --auto-skip-seconds 1 -600x500 -o - | ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 input.mp4
+mkdir frames
+ffmpeg -i input.mp4 -vf scale=600:-1:flags=lanczos,fps=10 frames/ffout%03d.png
+convert -loop 0 frames/ffout*.png output.gif
+rm -rf frames
