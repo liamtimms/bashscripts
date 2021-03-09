@@ -3,4 +3,4 @@
 MINPARAMS=1
 
 Usage(){ echo "$0; This script requires a source file"; exit 1; }
-mpv --autofit=800 --geometry=100%:100% --ontop ${1}
+mpv --autofit=800 --geometry=100%:100% --ontop "${1}"

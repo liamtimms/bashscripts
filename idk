@@ -4,10 +4,10 @@ MINPARAMS=1
 Usage(){ echo "$0; This script gives info on a command"; exit 1; }
 inputcommand=$1
 
-whatis ${inputcommand}
+whatis "${inputcommand}"
 
 # cheat.sh
-curl cheat.sh/${inputcommand}
+curl cheat.sh/"${inputcommand}"
 
 REPLY='y'
 read -p "More info? [y]/n " -n 1 -r
@@ -29,4 +29,4 @@ then
     exit 1
 fi
 
-man ${inputcommand}
+man "${inputcommand}"

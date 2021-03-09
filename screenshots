@@ -1,4 +1,4 @@
 #!/bin/bash
 # screenshot every two minutes
 # interupt this with crtl+z
-while true; do scrot -d 120 '%Y-%m-%d-%H:%M:%S.png' -e 'mv $f ~/Pictures/screenshots'; done
+while true; do scrot -d 120 "%Y-%m-%d-%H:%M:%S.png" -e "mv $f ~/Pictures/screenshots"; done

@@ -2,5 +2,5 @@
 program=$(pacman -Qq | fzf -m --preview="pacman -Qi {}" --bind=space:toggle-preview)
 
 if [ -n "$program" ] ; then
-    pacman -Qi $program
+    pacman -Qi "$program"
 fi

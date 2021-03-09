@@ -4,6 +4,6 @@
 program=$(pacman -Ssq | fzf -m --preview="pacman -Si {}" --bind=space:toggle-preview)
 
 if [ -n "$program" ] ; then
-    sudo pacman -S $program
+    sudo pacman -S "$program"
 fi
 

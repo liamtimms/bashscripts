@@ -9,13 +9,13 @@ MINPARAMS=1
 
 if [ -n "$1" ]
 then
-echo "#!/bin/bash" > $1
+echo "#!/bin/bash" > "$1"
 chmod 700 "$1"
-echo File $1 is now an executable and ready to be edited.
+echo File "$1" is now an executable and ready to be edited.
 fi
 
 if [ $# -lt "$MINPARAMS" ]
 then
-  echo Usage: `pwd`/`basename $0` /path/to/script.sh
+  echo enter scriptname
 fi
 exit 0

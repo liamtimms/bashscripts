@@ -8,6 +8,6 @@ inputfile=$1
 outputfile=${inputfile/.docx/.md}
 outputmedia=${inputfile/.docx/}
 echo "working..."
-pandoc --extract-media $outputmedia --wrap=none -N $inputfile -o $outputfile
+pandoc --extract-media "$outputmedia" --wrap=none -N "$inputfile" -o "$outputfile"
 echo "done"
 

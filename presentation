@@ -11,6 +11,6 @@ inputfile=$1
 outputfile_slides=${inputfile/.md/_slides.pdf}
 outputfile_notes=${inputfile/.md/_notes.pdf}
 echo "working..."
-pandoc $inputfile -t beamer -o $outputfile_slides
-pandoc -N $inputfile -o $outputfile_notes
+pandoc "$inputfile" -t beamer -o "$outputfile_slides"
+pandoc -N "$inputfile" -o "$outputfile_notes"
 echo "done"

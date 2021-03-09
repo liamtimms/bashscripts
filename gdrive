@@ -5,7 +5,7 @@
 MINPARAMS=1
 
 localpath=~/Documents/GoogleDrive/
-inputfolder=${currentfolder#"$localpath"}
+inputfolder="${currentfolder#$localpath}"
 
 #Usage(){ echo "$0; This script requires a source google drive folder"; exit 1; }
 operation="$1"
@@ -16,24 +16,24 @@ inputfolder="$2"
 
 # STATUS
 if [ "$operation" == "status" ]; then
-    rclone check $PWD remote:${PWD##*/GoogleDrive/}
+    rclone check "$PWD" remote:"${PWD##*/GoogleDrive/}"
     exit 1
 # CLONE
 elif [ "$operation" == "clone" ]; then
     echo "Cloning into ~/Documents/GoogleDrive/"
-    echo $inputfolder
-    rclone copy remote:$inputfolder ~/Documents/GoogleDrive/$inputfolder -P
+    echo "$inputfolder"
+    rclone copy remote:"$inputfolder" ~/Documents/GoogleDrive/$inputfolder -P
     exit 2
 # PUSH
 elif [ "$operation" == "push" ]; then
     echo "pushing local version of:"
-    echo $inputfolder
-    rclone copy $PWD remote:${PWD##*/GoogleDrive/}
+    echo "$inputfolder"
+    rclone copy "$PWD" remote:"${PWD##*/GoogleDrive/}"
 # PULL
 elif [ "$operation" == "pull" ]; then
     echo "pulling remote version of:"
-    echo ${PWD##*/GoogleDrive/}
-    rclone sync remote:${PWD##*/GoogleDrive/} $PWD
+    echo "${PWD##*/GoogleDrive/}"
+    rclone sync remote:"${PWD##*/GoogleDrive/}" "$PWD"
 fi
 
 # LIST
