@@ -17,10 +17,10 @@ else
 
 touch ${filename}
 cat <<EOT >> ${filename}
-% title
-% Liam Timms
-% \today
 ---
+title:
+author: Liam Timms
+date: \today
 theme: Singapore
 geometry: margin=.5in
 ---
