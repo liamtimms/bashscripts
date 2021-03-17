@@ -3,4 +3,43 @@
 # Input  : none
 # Author : Liam Timms
 
-mpv --volume=50 --no-video https://www.youtube.com/watch?v=5qap5aO4i9A
+__ScriptVersion="0"
+
+#===  FUNCTION  ================================================================
+#         NAME:  usage
+#  DESCRIPTION:  Display usage information.
+#===============================================================================
+function usage ()
+{
+    echo "Usage :  $0 [options] [--]
+
+    Options:
+    -l|lofi       lofi beats
+    -p|piano      relaxing piano
+    -h|help       Display this message
+    -v|version    Display script version"
+
+}    # ----------  end of function usage  ----------
+
+#-----------------------------------------------------------------------
+#  Handle command line arguments
+#-----------------------------------------------------------------------
+
+while getopts ":hvpl" opt
+do
+  case $opt in
+
+    h|help     )  usage; exit 0   ;;
+
+    v|version  )  echo "$0 -- Version $__ScriptVersion"; exit 0   ;;
+
+    p|piano ) mpv --volume=50 --no-video https://www.youtube.com/watch?v=XULUBg_ZcAU; exit 0 ;;
+
+    l|lofi ) mpv --volume=50 --no-video https://www.youtube.com/watch?v=5qap5aO4i9A; exit 0 ;;
+
+    * )  echo -e "\n  Option does not exist : $OPTARG\n"
+          usage; exit 1   ;;
+
+  esac    # --- end of case ---
+done
+shift $(($OPTIND-1))
