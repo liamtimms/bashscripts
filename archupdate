@@ -6,7 +6,8 @@
 plugged_in="1"
 if [[ -d "/sys/class/power_supply/BAT0" ]]
 then
-    plugged_in=$(cat /sys/class/power_supply/AC0/online)
+    # plugged_in=$(cat /sys/class/power_supply/AC0/online)
+    plugged_in=$(cat /sys/class/power_supply/ADP1/online)
 fi
 
 if [ "$plugged_in" -eq "0" ]
