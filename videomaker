@@ -1,21 +1,24 @@
 #!/bin/bash
 
-# mkdir cropped/
+mkdir cropped/
 mogrify -verbose -crop 800x850+210+140 -path ./cropped ./src/Screenshot*.png
 
-# mkdir bar/
-mogrify -verbose -crop 730x128+1170+540 -resize 50x100^ -path ./bar ./src/Screenshot*.png
+mkdir bar/
+mogrify -verbose -crop 713x77+1170+590 -resize 30x30^ -path ./bar ./src/Screenshot*.png
 
 mkdir composite/
 
 for file in $(find ./cropped -type f -printf "%f\n")
 do
     echo "$file"
-    composite -gravity SouthEast "./bar/$file" "./cropped/$file" "./composite/$file"
+    composite -gravity NorthWest "./bar/$file" "./cropped/$file" "./composite/$file"
 done
 
-ffmpeg -framerate 3 -f image2 -pattern_type glob -i 'composite/Screenshot_from_2021-03-15_*.png'  -vf minterpolate=fps=60:mi_mode=blend -c:v libx264 -pix_fmt yuv420p temp.mp4
+ffmpeg -framerate 2 -f image2 -pattern_type glob -i 'composite/Screenshot_from_2021-03-15_*.png'  -vf minterpolate=fps=60:mi_mode=blend -c:v libx264 -pix_fmt yuv420p temp.mp4
 
 ffmpeg -i temp.mp4 -i ~/Pictures/watermark.png -filter_complex "[1]format=rgba,colorchannelmixer=aa=0.2[logo];[logo][0]scale2ref=w=oh*mdar:h=ih*0.05[logo][video];[video][logo]overlay=5:H-h-5" -c:a copy output.mp4
 
 ffmpeg -i output.mp4 -vf reverse output_reverse.mp4
+
+ffmpeg -f concat -safe 0 -i output.txt -c copy output_together.mp4
+
