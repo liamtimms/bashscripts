@@ -46,11 +46,11 @@ then
     echo -e "\n"
     echo -e "Updating: Arch Linux databases and packages"
     echo -e "\n"
-    yay -Syyu
+    paru -Syyu
     sudo pacdiff
 else
     echo -e "Updating: Arch Linux"
     echo -e "\n"
-    yay -Syu
+    paru -Syu
 fi
 paccache -r
