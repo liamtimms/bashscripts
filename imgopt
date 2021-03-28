@@ -1,4 +1,3 @@
 #!/bin/bash
-
+fd '.jpg$' | parallel -j6 jpegoptim T 5 --preserve
 fd '.png$' | parallel -j6 optipng -o7 -preserve
-fd '.jpg$' | parallel -j6 jpegoptm T 5 --preserve
