@@ -3,8 +3,38 @@
 MINPARAMS=1
 
 Usage(){ echo "$0; This script requires a source file"; exit 1; }
-inputfile=$1
-pc="pandoc --filter pandoc-crossref -C -N --highlight-style zenburn -o temp.pdf ${inputfile}"
-$pc
-zathura temp.pdf &
-echo "${inputfile}" | entr -sc "${pc}"
+
+inputfile=$2
+
+function paper() {
+    #function_body
+    pc="pandoc --filter pandoc-crossref -C -N --highlight-style zenburn -o temp.pdf ${inputfile}"
+    $pc
+    zathura temp.pdf &
+    echo "${inputfile}" | entr -sc "${pc}"
+}
+
+function thesis() {
+    #function_body
+    pc="pandoc --filter pandoc-crossref --lua-filter=/home/liam/Documents/lua-filters/short-captions/short-captions.lua -C -N --highlight-style zenburn -o temp.pdf ${inputfile}"
+    $pc
+    zathura temp.pdf &
+    echo "${inputfile}" | entr -sc "${pc}"
+}
+
+while getopts ":ht" opt
+do
+  case $opt in
+
+    h|help     )  usage; exit 0   ;;
+
+    t|thesis  )  thesis; exit 0   ;;
+
+    p|paper  )  paper; exit 0   ;;
+
+    * )  echo -e "\n  Option does not exist : $OPTARG\n"
+          usage; exit 1   ;;
+
+  esac    # --- end of case ---
+done
+shift $(($OPTIND-1))
