@@ -22,7 +22,7 @@ function thesis() {
     echo "${inputfile}" | entr -sc "${pc}"
 }
 
-while getopts ":ht" opt
+while getopts ":hpt" opt
 do
   case $opt in
 
