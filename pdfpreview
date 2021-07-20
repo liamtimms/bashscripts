@@ -19,7 +19,7 @@ function thesis() {
     pc="pandoc --filter pandoc-crossref --lua-filter=/home/liam/Documents/lua-filters/short-captions/short-captions.lua -C -N --highlight-style zenburn -o temp.pdf ${inputfile}"
     $pc
     zathura temp.pdf &
-    echo "${inputfile}" | entr -sc "${pc}"
+    echo "${inputfile}" | entr -sc "date "+%T" ; echo ' - updating pdf' ; ${pc}"
 }
 
 while getopts ":hpt" opt
