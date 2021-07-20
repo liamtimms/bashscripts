@@ -16,6 +16,7 @@ function usage ()
     Options:
     -l|lofi       lofi beats
     -p|piano      relaxing piano
+    -s|social     social network
     -h|help       Display this message
     -v|version    Display script version"
 
@@ -25,7 +26,7 @@ function usage ()
 #  Handle command line arguments
 #-----------------------------------------------------------------------
 
-while getopts ":hvpl" opt
+while getopts ":hvpls" opt
 do
   case $opt in
 
@@ -36,6 +37,8 @@ do
     p|piano ) mpv --volume=50 --no-video https://www.youtube.com/watch?v=XULUBg_ZcAU; exit 0 ;;
 
     l|lofi ) mpv --volume=50 --no-video https://www.youtube.com/watch?v=5qap5aO4i9A; exit 0 ;;
+
+    s|social ) mpv --volume=50 --no-video https://youtu.be/yydZbVoCbn0; exit 0 ;;
 
     * )  echo -e "\n  Option does not exist : $OPTARG\n"
           usage; exit 1   ;;
