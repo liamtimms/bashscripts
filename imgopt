@@ -1,3 +1,6 @@
 #!/bin/bash
+echo "=== found $(fd '.jpg$' | wc -l) jpgs ==="
+echo "=== found $(fd '.png$' | wc -l) pngs ==="
+
 fd '.jpg$' | parallel -j6 jpegoptim T 5 --preserve
 fd '.png$' | parallel -j6 optipng -o7 -preserve
