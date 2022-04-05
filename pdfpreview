@@ -11,7 +11,7 @@ function paper() {
     pc="pandoc --filter pandoc-crossref -C -N --highlight-style zenburn -o temp.pdf ${inputfile}"
     $pc
     zathura temp.pdf &
-    echo "${inputfile}" | entr -sc "${pc}"
+    echo "${inputfile}" | entr -sc "date "+%T" ; echo ' - updating pdf' ; ${pc}"
 }
 
 function thesis() {
