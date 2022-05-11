@@ -1,10 +1,21 @@
 #!/bin/bash
 # cribbed from:
-# https://wiki.archlinux.org/index.php/Rsync#As_a_backup_utility
 
 # config vars
-SRC="/" #dont forget trailing slash!
-DEST="/mnt/4e43a4f6-7402-4881-bcf5-d280e54cc385/backups"
+HOME="/home/liam/" #dont forget trailing slash!
+DEST="/run/media/liam/essd_backup/Backup_Archbook/liam/"
 
-# sync
-rsync -aAXSv --exclude='/dev/*' --exclude='/proc/*' --exclude='/sys/*' --exclude='/tmp/*' --exclude='/run/*' --exclude='/mnt/*' --exclude='/media/*' --exclude='/lost+found' --exclude='/home/*/.gvfs' --exclude='/var/lib/dhcpcd/*' $SRC $DEST/latest
+if [[ -d $DEST ]];
+then
+
+    declare -a StringArray=("Documents" "Music" "Videos" "Pictures" "Downloads")
+
+    # sync
+    for dir in "${StringArray[@]}"; do
+      rsync -rauP $HOME"${dir}" "${DEST}"
+      # echo $HOME"${dir}"
+    done
+else
+    echo "backup dir not found"
+fi
+
