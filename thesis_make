@@ -5,4 +5,6 @@ updatethesis="thesis_combine list_chapts.txt ${thesis_doc}"
 updategit="gitpaper ${thesis_doc}"
 makepdf="pdfpreview -t ${thesis_doc}"
 # (echo $updatethesis; echo $makepdf; echo $updategit) | parallel
-$updatethesis & $makepdf & $updategit
+$updatethesis &
+$makepdf &
+$updategit

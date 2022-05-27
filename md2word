@@ -2,11 +2,13 @@
 # Just a useful pandoc commmand with some cleaning after
 MINPARAMS=1
 
-Usage(){ echo "$0; This script requires a source file"; exit 1; }
+Usage() {
+    echo "$0; This script requires a source file"
+    exit 1
+}
 inputfile=$1
 # read inputfile
 outputfile=${inputfile/.md/.docx}
 echo "working..."
 pandoc "$inputfile" --filter pandoc-crossref -C --csl ieee.csl -o "$outputfile"
 echo "done"
-

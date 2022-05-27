@@ -5,8 +5,7 @@ outdirectory=$2
 outdirectory=$PWD/$outdirectory
 
 cd $indirectory
-for file in $(find -name \*.pdf)
-do
+for file in $(find -name \*.pdf); do
     echo $file
     pdfimages -all "${file}" $outdirectory/images/${file}-
     outputfile=${file/.pdf/.txt}

@@ -9,14 +9,14 @@ if [ -z "$1" ]; then
     $EDITOR ${filename}
 else
 
-filename=~/Documents/notes/$1.md
+    filename=~/Documents/notes/$1.md
 
-if [ -f "${filename}" ]; then
-$EDITOR ${filename}
-else
+    if [ -f "${filename}" ]; then
+        $EDITOR ${filename}
+    else
 
-touch ${filename}
-cat <<EOT >> ${filename}
+        touch ${filename}
+        cat <<EOT >>${filename}
 ---
 title:
 author: Liam Timms
@@ -26,10 +26,8 @@ geometry: margin=.5in
 ---
 EOT
 
-$EDITOR ${filename}
+        $EDITOR ${filename}
+
+    fi
 
 fi
-
-fi
-
-

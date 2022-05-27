@@ -5,17 +5,16 @@
 HOME="/home/liam/" #dont forget trailing slash!
 DEST="/run/media/liam/essd_backup/Backup_Archbook/liam/"
 
-if [[ -d $DEST ]];
-then
+if [[ -d $DEST ]]; then
 
-    declare -a StringArray=("Documents" "Music" "Videos" "Pictures" "Downloads")
+    declare -a StringArray=("Documents" "Music" "Videos" "Pictures" "Downloads" "OneDrive")
 
     # sync
     for dir in "${StringArray[@]}"; do
-      rsync -rauP $HOME"${dir}" "${DEST}"
-      # echo $HOME"${dir}"
+        rsync -rauP $HOME"${dir}" "${DEST}"
+        echo "${dir} backed up"
+        # echo $HOME"${dir}"
     done
 else
     echo "backup dir not found"
 fi
-

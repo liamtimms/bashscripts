@@ -38,7 +38,6 @@ fi
 
 # LIST
 
-
 # TODO: add check, push, pull, capabilities. Maybe just make this like git?
 # rclone check source:path dest:path
 # push - rclone copy source:localpath dest:path

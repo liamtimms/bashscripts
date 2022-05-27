@@ -1,7 +1,10 @@
 #!/bin/bash
 # script to quickly give a bunch of info sequentially on a particular command
 MINPARAMS=1
-Usage(){ echo "$0; This script gives info on a command"; exit 1; }
+Usage() {
+    echo "$0; This script gives info on a command"
+    exit 1
+}
 inputcommand=$1
 
 whatis "${inputcommand}"
@@ -11,9 +14,8 @@ curl cheat.sh/"${inputcommand}"
 
 REPLY='y'
 read -p "More info? [y]/n " -n 1 -r
-echo    # (optional) move to a new line
-if [[ ! $REPLY =~ ^[Yy]$ ]]
-then
+echo # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
@@ -23,9 +25,8 @@ ${inputcommand} --help
 
 REPLY='y'
 read -p "More info? [y]/n " -n 1 -r
-echo    # (optional) move to a new line
-if [[ ! $REPLY =~ ^[Yy]$ ]]
-then
+echo # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 1
 fi
 

@@ -1,12 +1,10 @@
 #!/bin/bash
-for dir in $(fd -t d -d 1)
-do
+for dir in $(fd -t d -d 1); do
     mkdir -p headers
     inputfile=$(fd -t f -d 1 'ima|dcm' $dir | head -n 1)
     header_file="${dir}_dcm_header"
     csa_file="${dir}_csa_header"
-    gdcmdump -i "${inputfile}" > $header_file
-    gdcmdump -C -i "${inputfile}" > $csa_file
+    gdcmdump -i "${inputfile}" >$header_file
+    gdcmdump -C -i "${inputfile}" >$csa_file
     mv *_header headers
 done
-

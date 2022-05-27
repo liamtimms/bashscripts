@@ -3,7 +3,6 @@
 
 program=$(pacman -Ssq | fzf -m --preview="pacman -Si {}" --bind=space:toggle-preview)
 
-if [ -n "$program" ] ; then
+if [ -n "$program" ]; then
     sudo pacman --needed -S "$program"
 fi
-
