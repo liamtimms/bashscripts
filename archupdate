@@ -3,51 +3,145 @@
 
 # else, just run a normal update. Either way, clean up the pacman cache afterwards.
 
-plugged_in="1"
-if [[ -d "/sys/class/power_supply/BAT0" ]]; then
-    # plugged_in=$(cat /sys/class/power_supply/AC0/online)
-    plugged_in=$(cat /sys/class/power_supply/ADP1/online)
-fi
+function check_plugged_in() {
+	plugged_in="1"
+	if [[ -d "/sys/class/power_supply/BAT0" ]]; then
+		# plugged_in=$(cat /sys/class/power_supply/AC0/online)
+		plugged_in=$(cat /sys/class/power_supply/ADP1/online)
+	fi
 
-if [ "$plugged_in" -eq "0" ]; then
-    echo "not plugged in, exiting"
-    exit
-fi
+	if [ "$plugged_in" -eq "0" ]; then
+		echo "not plugged in, exiting"
+		exit
+	fi
+}
 
-last_upgrade=$(tac /var/log/pacman.log |
-    grep -m 1 'upgraded' |
-    cut -d ' ' -f 1 | tr -d '[]')
-t1=$(date +%s -d "$last_upgrade")
-t2=$(date +%s)
-days=$(((t2 - t1) / 86400))
-echo "$days days since last upgrade"
+function info() {
+	last_upgrade=$(tac /var/log/pacman.log |
+		grep -m 1 'upgraded' |
+		cut -d ' ' -f 1 | tr -d '[]')
+	t1=$(date +%s -d "$last_upgrade")
+	t2=$(date +%s)
+	days=$(((t2 - t1) / 86400))
+	echo "$days days since last upgrade"
 
-if [[ $(find /etc/pacman.d/mirrorlist -mtime +8 -print) ]]; then
-    echo -e "Updating: mirrorlist"
-    sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
-    sudo reflector --country 'United States' --country 'Canada' --latest 200 \
-        --age 24 --sort rate --save /etc/pacman.d/mirrorlist
-    echo -e "\n"
-    echo -e "Updating: firmware"
-    echo -e "\n"
-    fwupdmgr refresh
-    fwupdmgr get-updates
-    echo -e "\n"
-    echo -e "Updating: neovim plugins"
-    echo -e "\n"
-    nvim --headless +PlugUpgrade +PlugUpdate +qa
-    echo -e "\n"
-    echo -e "Updating: Liam's bashscripts"
-    echo -e "\n"
-    git -C ~/bin/bashscripts pull
-    echo -e "\n"
-    echo -e "Updating: Arch Linux databases and packages"
-    echo -e "\n"
-    paru -Syyu
-    sudo pacdiff
-else
-    echo -e "Updating: Arch Linux"
-    echo -e "\n"
-    paru -Syu
-fi
-paccache -r
+	paru -Pw
+}
+
+function update_mirror_list() {
+	if [[ $(find /etc/pacman.d/mirrorlist -mtime +8 -print) ]]; then
+		echo -e "Updating: mirrorlist"
+		sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+		sudo reflector --country 'United States' --country 'Canada' --latest 200 \
+			--age 24 --sort rate --save /etc/pacman.d/mirrorlist
+	fi
+}
+
+function pre() {
+	check_plugged_in
+	update_mirror_list
+	info
+}
+
+function update_pacman() {
+	echo -e "\nUpdating: Pacman\n"
+	sudo pacman -Syu
+}
+
+function update_paru() {
+	echo -e "\n"
+	echo -e "Updating: Arch Linux databases and packages"
+	echo -e "\n"
+	paru --gendb
+	paru -Syyu
+}
+
+function update_others() {
+	echo -e "\nUpdating: Liam's bashscripts\n"
+	git -C ~/bin/bashscripts pull
+
+	echo -e "\nUpdating: Rust\n"
+	rustup update
+
+	echo -e "\nUpdating: Firmware\n"
+	fwupdmgr refresh
+	fwupdmgr get-updates
+
+	echo -e "\nUpdating: Neovim Plugins\n"
+	nvim --headless +PlugUpdate +CocUpdate +PlugUpgrade +qa
+
+	echo -e "\nUpdating: Boot Loader\n"
+	sudo bootctl update
+
+	echo -e "\nUpdating: Anaconda\n"
+	conda update --all
+
+	# echo -e "\nUpdating: NPM\n"
+	# npm update -g
+}
+
+function clean_cache() {
+	echo -e "\nCleaning: Pacman Cache\n"
+	paccache -r -k 3
+
+	echo -e "\nCleaning: AUR Cache\n"
+	cd ~/.cache/paru/clone
+	trash $(fd -e pkg.tar.zst)
+	trash $(fd -e tar.gz)
+	cd -
+}
+
+function diffs() {
+	sudo pacdiff
+}
+
+function post() {
+	clean_cache
+	diffs
+}
+
+function full_update() {
+	pre
+	update_mirror_list
+	update_paru
+	update_others
+	post
+}
+
+function basic_update() {
+	pre
+	paru
+}
+
+while getopts ":hfbo" opt; do
+	case $opt in
+
+	h | help)
+		usage
+		exit 0
+		;;
+
+	f | full)
+		full_update
+		exit 0
+		;;
+
+	b | basic)
+		basic_update
+		exit 0
+		;;
+
+	o | other)
+		update_others
+		exit 0
+		;;
+
+	*)
+		echo -e "\n  Option does not exist : $OPTARG\n"
+		usage
+		exit 1
+		;;
+
+	esac # --- end of case ---
+done
+shift $(($OPTIND - 1))
