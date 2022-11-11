@@ -53,7 +53,7 @@ function update_paru() {
 	echo -e "Updating: Arch Linux databases and packages"
 	echo -e "\n"
 	paru --gendb
-	paru -Syyu
+	paru -Syyu --sudoloop
 }
 
 function update_others() {
@@ -69,6 +69,9 @@ function update_others() {
 
 	echo -e "\nUpdating: Neovim Plugins\n"
 	nvim --headless +PlugUpdate +CocUpdate +PlugUpgrade +qa
+
+	echo -e "\nUpdating: Tmux Plugins\n"
+	~/.tmux/plugins/tpm/bin/update_plugins all
 
 	echo -e "\nUpdating: Boot Loader\n"
 	sudo bootctl update
@@ -86,13 +89,17 @@ function clean_cache() {
 
 	echo -e "\nCleaning: AUR Cache\n"
 	cd ~/.cache/paru/clone
-	trash $(fd -e pkg.tar.zst)
-	trash $(fd -e tar.gz)
+	trash $(fd -I -e pkg.tar.zst --changed-before 14d)
+	trash $(fd -I -e tar.gz --changed-before 14d)
 	cd -
+
+	echo -e "\nCleaning: Unused Plugins\n"
+	~/.tmux/plugins/tpm/bin/clean_plugins
+	nvim --headless +PlugClean +qa
 }
 
 function diffs() {
-	sudo pacdiff
+	sudo DIFFPROG="nvim -d $1" pacdiff
 }
 
 function post() {
@@ -110,7 +117,7 @@ function full_update() {
 
 function basic_update() {
 	pre
-	paru
+	paru -Syu --sudoloop
 }
 
 while getopts ":hfbo" opt; do
