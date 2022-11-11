@@ -1,3 +1,10 @@
 #!/bin/bash
-MINPARAMS=1
-pacman -Rns "$1"
+
+fzf_flags="--ansi --multi --bind=space:toggle-preview --preview "
+
+programs=$(pacman --color always -Q | cut -f 1 -d ' ' | fzf ${fzf_flags} 'pacman -Qi {1}')
+echo -e "selected: \n${programs}"
+
+if [ -n "$programs" ]; then
+	sudo pacman -Rns $programs
+fi
