@@ -1,4 +1,5 @@
 #!/bin/bash
+# night equivalent to goodmorning (never used)
 
 gnome-pomodoro --stop
 backup

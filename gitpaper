@@ -1,10 +1,11 @@
 #!/bin/bash
 # Moves each sentence of a markdown file to a new line for easier git tracking.
+
 MINPARAMS=1
 
 Usage() {
-    echo "$0; This script requires a source file"
-    exit 1
+	echo "$0; This script requires a source file"
+	exit 1
 }
 inputfile=$1
 outputfile=${inputfile/.md/_git.md}

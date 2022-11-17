@@ -1,4 +1,6 @@
 #!/bin/bash
+# connects to my remote servers
+
 sshfs ripley@nostromo:/mnt/hdd/Analysis ~/mnt/Analysis -C -p 39901
 sshfs ripley@nostromo:/run/media/ripley/extreme_ssd/home/ /home/liam/mnt/remote/ -C -p 39901
 ssh -p 39901 ripley@nostromo -fNL 8888:localhost:8889

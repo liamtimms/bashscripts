@@ -1,3 +1,5 @@
 #!/bin/bash
+# mount common remote filesystems
+
 sshfs ripley@nostromo:/mnt/hdd/Analysis ~/mnt/Analysis -C -p 39901
 sshfs liam@liam-x220:/media/liam/ultrabase ~/mnt/ultrabase -C -p 39901

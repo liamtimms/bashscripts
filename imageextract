@@ -1,4 +1,6 @@
 #!/bin/bash
+# extract images from pdfs
+
 MINPARAMS=2
 indirectory=$1
 outdirectory=$2
@@ -6,8 +8,8 @@ outdirectory=$PWD/$outdirectory
 
 cd $indirectory
 for file in $(find -name \*.pdf); do
-    echo $file
-    pdfimages -all "${file}" $outdirectory/images/${file}-
-    outputfile=${file/.pdf/.txt}
-    pdftotext -nopgbrk "${file}" "${outdirectory}/${outputfile}"
+	echo $file
+	pdfimages -all "${file}" $outdirectory/images/${file}-
+	outputfile=${file/.pdf/.txt}
+	pdftotext -nopgbrk "${file}" "${outdirectory}/${outputfile}"
 done

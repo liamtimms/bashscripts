@@ -1,5 +1,8 @@
 #!/bin/bash
-# cribbed from Conner McD
+# search for a package from the official repos and install it
+# original was cribbed from Conner McD, since modified and expanded
+
+fzf_flags="--ansi --multi --bind=space:toggle-preview --preview "
 
 programs=$(pacman --color always -Sl | fzf --layout=reverse --multi --ansi -m --preview="pacman -Si {2}" --bind=space:toggle-preview | cut -f 2 -d " " | tr '\n' ' ' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g')
 echo -e "selected: \n${programs}"

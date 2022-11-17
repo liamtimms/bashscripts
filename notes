@@ -4,19 +4,19 @@
 # Author : Liam Timms
 
 if [ -z "$1" ]; then
-    cd ~/Documents/notes
-    filename=$(ls *.md | fzf -m --preview='head -10 {}')
-    $EDITOR ${filename}
+	cd ~/Documents/notes
+	filename=$(ls *.md | fzf -m --preview='head -10 {}')
+	$EDITOR ${filename}
 else
 
-    filename=~/Documents/notes/$1.md
+	filename=~/Documents/notes/$1.md
 
-    if [ -f "${filename}" ]; then
-        $EDITOR ${filename}
-    else
+	if [ -f "${filename}" ]; then
+		$EDITOR ${filename}
+	else
 
-        touch ${filename}
-        cat <<EOT >>${filename}
+		touch ${filename}
+		cat <<EOT >>${filename}
 ---
 title:
 author: Liam Timms
@@ -26,8 +26,8 @@ geometry: margin=.5in
 ---
 EOT
 
-        $EDITOR ${filename}
+		$EDITOR ${filename}
 
-    fi
+	fi
 
 fi

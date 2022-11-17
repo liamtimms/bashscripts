@@ -1,4 +1,5 @@
 #!/bin/bash
+# make thesis pdf
 cd $PWD
 thesis_doc=thesis_chapts.md
 updatethesis="thesis_combine list_chapts.txt ${thesis_doc}"

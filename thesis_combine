@@ -1,9 +1,12 @@
 #!/bin/bash
+# combine chapters of thesis into one file
+
 inputfile=$1
 cd $PWD
+
 while sleep 1; do
-    list=$(cat $inputfile)
-    outputfile=$2
-    command="cat $(echo $list) > ${outputfile}"
-    ls chapters/*.md | entr -sc -d "date "+%T" ; echo ' - updating thesis markdown' ; ${command}"
+	list=$(cat $inputfile)
+	outputfile=$2
+	command="cat $(echo $list) > ${outputfile}"
+	ls chapters/*.md | entr -sc -d "date "+%T" ; echo ' - updating thesis markdown' ; ${command}"
 done

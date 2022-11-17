@@ -1,4 +1,5 @@
 #!/bin/bash
+# a script for Swaybar to display if archlinux updates are needed
 
 n=$(checkupdates | grep -v hask | wc -l)
 p=$(expr $n \> 30)

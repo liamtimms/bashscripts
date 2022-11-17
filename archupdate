@@ -1,6 +1,5 @@
 #!/bin/bash
-# save and update mirror list, firmware and this repo and nvim plugs if it's been a week
-
+# Update all parts of the system
 # else, just run a normal update. Either way, clean up the pacman cache afterwards.
 
 function check_plugged_in() {
@@ -17,6 +16,7 @@ function check_plugged_in() {
 }
 
 function info() {
+	# check how many days since last update
 	last_upgrade=$(tac /var/log/pacman.log |
 		grep -m 1 'upgraded' |
 		cut -d ' ' -f 1 | tr -d '[]')
@@ -25,10 +25,12 @@ function info() {
 	days=$(((t2 - t1) / 86400))
 	echo "$days days since last upgrade"
 
+	# print any news from the archlinux news page
 	paru -Pw
 }
 
 function update_mirror_list() {
+	# save and update mirror list, firmware and this repo and nvim plugs if it's been a week
 	if [[ $(find /etc/pacman.d/mirrorlist -mtime +8 -print) ]]; then
 		echo -e "Updating: mirrorlist"
 		sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
@@ -44,11 +46,13 @@ function pre() {
 }
 
 function update_pacman() {
+	# update packages from prebuilt repos
 	echo -e "\nUpdating: Pacman\n"
 	sudo pacman -Syu
 }
 
 function update_paru() {
+	# update repo and AUR packages with full refresh
 	echo -e "\n"
 	echo -e "Updating: Arch Linux databases and packages"
 	echo -e "\n"

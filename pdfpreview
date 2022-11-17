@@ -1,54 +1,55 @@
 #!/bin/bash
 # pandoc conversion with entr to enable live previews
+
 MINPARAMS=1
 
 Usage() {
-    echo "$0; This script requires a source file"
-    exit 1
+	echo "$0; This script requires a source file"
+	exit 1
 }
 
 inputfile=$2
 
 function paper() {
-    #function_body
-    pc="pandoc --filter pandoc-crossref -C -N --highlight-style zenburn -o temp.pdf ${inputfile}"
-    $pc
-    xdg-open temp.pdf &
-    echo "${inputfile}" | entr -sc "date "+%T" ; echo ' - updating pdf' ; ${pc}"
+	#function_body
+	pc="pandoc --filter pandoc-crossref -C -N --highlight-style zenburn -o temp.pdf ${inputfile}"
+	$pc
+	xdg-open temp.pdf &
+	echo "${inputfile}" | entr -sc "date "+%T" ; echo ' - updating pdf' ; ${pc}"
 }
 
 function thesis() {
-    #function_body
-    pc="pandoc --filter pandoc-crossref --lua-filter=/home/liam/Documents/lua-filters/short-captions/short-captions.lua -C -N --highlight-style zenburn -o temp.pdf ${inputfile}"
-    $pc
-    xdg-open temp.pdf &
-    echo "${inputfile}" | entr -sc "date "+%T" ; echo ' - updating pdf' ; ${pc}"
+	#function_body
+	pc="pandoc --filter pandoc-crossref --lua-filter=/home/liam/Documents/lua-filters/short-captions/short-captions.lua -C -N --highlight-style zenburn -o temp.pdf ${inputfile}"
+	$pc
+	xdg-open temp.pdf &
+	echo "${inputfile}" | entr -sc "date "+%T" ; echo ' - updating pdf' ; ${pc}"
 }
 
 while getopts ":hpt" opt; do
-    case $opt in
+	case $opt in
 
-    h | help)
-        usage
-        exit 0
-        ;;
+	h | help)
+		usage
+		exit 0
+		;;
 
-    t | thesis)
-        thesis
-        exit 0
-        ;;
+	t | thesis)
+		thesis
+		exit 0
+		;;
 
-    p | paper)
-        paper
-        exit 0
-        ;;
+	p | paper)
+		paper
+		exit 0
+		;;
 
-    *)
-        echo -e "\n  Option does not exist : $OPTARG\n"
-        usage
-        exit 1
-        ;;
+	*)
+		echo -e "\n  Option does not exist : $OPTARG\n"
+		usage
+		exit 1
+		;;
 
-    esac # --- end of case ---
+	esac # --- end of case ---
 done
 shift $(($OPTIND - 1))

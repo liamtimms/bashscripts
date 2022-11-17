@@ -1,5 +1,5 @@
 #!/bin/bash
-# cribbed from:
+# copy directories to backup drive with rsync
 
 # config vars
 HOME="/home/liam/" #dont forget trailing slash!
@@ -7,14 +7,14 @@ DEST="/run/media/liam/essd_backup/Backup_Archbook/liam/"
 
 if [[ -d $DEST ]]; then
 
-    declare -a StringArray=("Documents" "Music" "Videos" "Pictures" "Downloads" "OneDrive")
+	declare -a StringArray=("bin" ".config" "Documents" "Music" "Videos" "Pictures" "Downloads" "OneDrive")
 
-    # sync
-    for dir in "${StringArray[@]}"; do
-        rsync -rauP $HOME"${dir}" "${DEST}"
-        echo "${dir} backed up"
-        # echo $HOME"${dir}"
-    done
+	# sync
+	for dir in "${StringArray[@]}"; do
+		rsync -rauP $HOME"${dir}" "${DEST}"
+		echo "${dir} backed up"
+		# echo $HOME"${dir}"
+	done
 else
-    echo "backup dir not found"
+	echo "backup dir not found"
 fi

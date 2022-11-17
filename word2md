@@ -1,10 +1,11 @@
 #!/bin/bash
-# Just a useful pandoc commmand with some cleaning after
+# convert word docx to markdown, extract images into a directory
+
 MINPARAMS=1
 
 Usage() {
-    echo "$0; This script requires a source file"
-    exit 1
+	echo "$0; This script requires a source file"
+	exit 1
 }
 inputfile=$1
 # read inputfile

@@ -1,4 +1,5 @@
 #!/bin/bash
+# make a gif of a git history visualization
 # from https://gist.github.com/spacecowb0y/25284cd9a47b987694d4
 
 gource --key --highlight-users --seconds-per-day 0.1 --auto-skip-seconds 1 -600x500 -o - | ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 input.mp4

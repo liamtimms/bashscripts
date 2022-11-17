@@ -1,4 +1,5 @@
 #!/bin/bash
+# search for an installed package and remove it from the system
 
 fzf_flags="--ansi --multi --bind=space:toggle-preview --preview "
 

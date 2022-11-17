@@ -1,3 +1,5 @@
 #!/bin/bash
+# start vnc connection
+
 ssh -p 39901 ripley@108.7.160.220 -fL 6998:localhost:5901 sleep 10
 vncviewer localhost:6998

@@ -1,4 +1,6 @@
 #!/bin/bash
+# greets me, tells me the weather, lists todo list, gives time for coffee, and then starts
+# pomodoro timer and opens todo list.
 
 espeak "Good morning, Liam."
 curl wttr.in

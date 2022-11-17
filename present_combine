@@ -2,8 +2,8 @@
 inputfile=$1
 cd $PWD
 while sleep 0.5; do
-    list=$(cat $inputfile)
-    outputfile=$2
-    command="cat $(echo $list) > ${outputfile}"
-    ls present_chapt/*.md | entr -sc -d "date "+%T" ; echo ' - updating thesis presentation' ; ${command}"
+	list=$(cat $inputfile)
+	outputfile=$2
+	command="cat $(echo $list) > ${outputfile}"
+	ls present_chapt/*.md | entr -sc -d "date "+%T" ; echo ' - updating thesis presentation' ; ${command}"
 done

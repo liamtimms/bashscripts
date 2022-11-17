@@ -6,8 +6,8 @@
 MINPARAMS=1
 
 Usage() {
-    echo "$0; This script require a source file"
-    exit 1
+	echo "$0; This script require a source file"
+	exit 1
 }
 inputfile=$1
 # read inputfile

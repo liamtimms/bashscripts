@@ -1,4 +1,5 @@
 #!/bin/bash
+# unused script to do a daily journal, superceded by vimwiki
 
 cd ~/Documents/notes/journal
 
@@ -6,11 +7,11 @@ printf -v d '%(%Y-%m-%d)T' -1
 filename="${d}.md"
 
 if [ -f "${filename}" ]; then
-    nvim ${filename}
+	nvim ${filename}
 else
 
-    touch ${filename}
-    cat <<EOT >>${filename}
+	touch ${filename}
+	cat <<EOT >>${filename}
 % Journal for ${d}
 % Liam Timms
 
@@ -31,6 +32,6 @@ else
 ## Goals For Tomorrow
 EOT
 
-    nvim ${filename}
+	nvim ${filename}
 
 fi

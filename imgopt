@@ -1,4 +1,6 @@
 #!/bin/bash
+# losslessly optimize images in a directory with 6 parallel threads
+
 echo "=== found $(fd '.jpg$' | wc -l) jpgs ==="
 echo "=== found $(fd '.png$' | wc -l) pngs ==="
 
