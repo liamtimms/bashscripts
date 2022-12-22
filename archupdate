@@ -39,6 +39,16 @@ function update_mirror_list() {
 	fi
 }
 
+function update_package_lists() {
+	# update package list
+	echo -e "Updating: package list"
+	dir=$CUSTOM_CONFIG_HOME/package_info/
+	declare -a package_lists=("qne" "qme" "qnett" "qmett" "qtd" "qtdq")
+	for pacman_arg in "${package_lists[@]}"; do
+		pacman -Q${pacman_arg} >"${dir}"${pacman_arg}
+	done
+}
+
 function pre() {
 	check_plugged_in
 	update_mirror_list
@@ -109,6 +119,7 @@ function diffs() {
 }
 
 function post() {
+	update_package_lists
 	clean_cache
 	diffs
 }
@@ -126,7 +137,7 @@ function basic_update() {
 	paru -Syu --sudoloop
 }
 
-while getopts ":hfbo" opt; do
+while getopts ":hfbop" opt; do
 	case $opt in
 
 	h | help)
@@ -146,6 +157,11 @@ while getopts ":hfbo" opt; do
 
 	o | other)
 		update_others
+		exit 0
+		;;
+
+	p | post)
+		post
 		exit 0
 		;;
 
