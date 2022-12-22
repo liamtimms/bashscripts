@@ -72,7 +72,9 @@ function update_others() {
 	fwupdmgr get-updates
 
 	echo -e "\nUpdating: Neovim Plugins\n"
-	nvim --headless +PlugUpdate +CocUpdate +PlugUpgrade +qa
+	nvim --headless +PlugUpdate +PlugUpgrade +qa
+	nvim --headless +CocUpdate +qa
+	nvim --headless +TSUpdate +qa
 
 	echo -e "\nUpdating: Tmux Plugins\n"
 	~/.tmux/plugins/tpm/bin/update_plugins all
