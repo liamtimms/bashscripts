@@ -1,7 +1,7 @@
 #!/bin/bash
 
 HOME="/home/liam/" #dont forget trailing slash!
-declare -a Repos=('Documents/LaptopSync/wiki/' '.custom_config/configs/')
+declare -a Repos=('Documents/LaptopSync/wiki/' '.custom_config/configs/' 'bin/bashscripts')
 
 for dir in "${Repos[@]}"; do
 	echo $HOME"${dir}"
