@@ -1,0 +1,22 @@
+#!/bin/bash
+
+HOME="/home/liam/" #dont forget trailing slash!
+declare -a Repos=('Documents/LaptopSync/wiki/' '.custom_config/configs/')
+
+for dir in "${Repos[@]}"; do
+	echo $HOME"${dir}"
+	cd $HOME"${dir}" || exit #change to repo dir or exit
+	git fetch                #fetch latest changes
+	#check if remote is ahead of local
+	if [ 0 != $(git rev-list --count HEAD..@{u}) ]; then
+		# if so, do nothing
+		echo "${dir} is behind remote"
+	else
+		# if not, commit and push
+		git add .
+		git commit -m "🤖 automatic update"
+		git push
+		echo "automatic update of ${dir} complete" #print completion message
+	fi
+
+done
