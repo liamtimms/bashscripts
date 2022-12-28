@@ -10,12 +10,7 @@ Paru must be manually installed if you haven't already installed it. `gnome-pomo
 
 Before running any script with rclone, you need to configure it to use your cloud drive of choice.
 
-## Table of Contents
-
-- [pac](##pac)
-- [archupdate](##archupdate)
-
-## pac
+# pac
 
 `pac` is a tiny but powerful wrapper for `fzf` and `pacman` which allows you to interacively search for, select, and manage packages installed on your machine or from the official Arch Linux repositories. It is both simple and extremely powerful by leveraging core utils, fzf features, and pacman's many flags. It enables selection of multiple packages to install or uninstall or print the info of selected installed packages.
 
@@ -41,7 +36,7 @@ Run the script and you will be presented with a search interface powered by fzf.
 
 You can customize the behavior of the fzf search windows by modifying the \_fzf_flags variable at the top of the script. For example, you can change the --ansi flag to --no-ansi to disable ANSI color output, or you can add the --reverse flag to reverse the order of the search results. Consult the fzf documentation for a full list of options.
 
-## archupdate
+# archupdate
 
 Script designed to updates on my entire Arch linux install and setup. To that end it...
 
