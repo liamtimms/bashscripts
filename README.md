@@ -10,6 +10,11 @@ Paru must be manually installed if you haven't already installed it. `gnome-pomo
 
 Before running any script with rclone, you need to configure it to use your cloud drive of choice.
 
+## Table of Contents
+
+- [pac](##pac)
+- [archupdate](##archupdate)
+
 ## pac
 
 `pac` is a tiny but powerful wrapper for `fzf` and `pacman` which allows you to interacively search for, select, and manage packages installed on your machine or from the official Arch Linux repositories. It is both simple and extremely powerful by leveraging core utils, fzf features, and pacman's many flags. It enables selection of multiple packages to install or uninstall or print the info of selected installed packages.
@@ -24,11 +29,11 @@ pac [-h|--help] [-v|--version] [-s|--install] [-r|--uninstall] [-q|--info]
 
 The available options are:
 
--h or --help: Display usage information and exit.
--v or --version: Display the script version and exit.
--s or --install: Search for and select packages from the official Arch Linux repositories using fzf, and then install the selected packages using pacman.
--r or --uninstall: Select installed packages using fzf, and then uninstall the selected packages using pacman.
--q or --info: Search for and select an installed package using fzf, and then display information about the selected package using pacman.
+    -h or --help: Display usage information and exit.
+    -v or --version: Display the script version and exit.
+    -s or --install: Search for and select packages from the official Arch repos to install
+    -r or --uninstall: Select installed packages to uninstall.
+    -q or --info: Select an installed package and display it's pacman database information.
 
 Run the script and you will be presented with a search interface powered by fzf. Begin typing the name of the package(s) you want to (un)install, and use the space bar to preview information about packages. To select multiple packages flag them with by hitting Tab. When you have selected the package(s) you want, press Enter to pass the selection to pacman.
 
@@ -71,13 +76,13 @@ archupdate [-h|--help] [-f|--full] [-b|--basic] [-o|--other] [-p|--post]
 
 The available options are:
 
--h or --help: Display usage information and exit.
--f or --full: Update and clean all supported system components.
--b or --basic: Perform preupdate functions, then update only system-level packages.
--o or --other: Update non-system packages (those not included in the basic update).
--p or --post: Perform cleaning functions, which are included in the full update but not the basic update.
+    -h or --help: Display usage information and exit.
+    -f or --full: Do all supported tasks (pre-update, system update, component updates, cleaning).
+    -b or --basic: Deal with preupdate tasks, then update only system-level packages.
+    -o or --other: Update non-system packages (those not included in the basic update).
+    -p or --post: Perform cleaning functions (usually done at the end of full update).
 
-**dependencies:** `pacman` (always there on Arch), `reflector`, `fwupdmgr`, `paru`, `pacman-contrib`, `neovim` with vim-plug (see my dotfiles)
+**dependencies:** `pacman`, `reflector`, `fwupdmgr`, `paru`, `pacman-contrib`, `neovim` with vim-plug (see my dotfiles), `tmux` with tmux-plugin-manager, anaconda python user installation with a base environment
 
 Note: much of this could be accomplished with pacman hooks but not all of this concerns `pacman` and other updaters could be added in the future. Power check is there because I've had major system corruption more than once due to a failing battery cutting power in the middle of firmware and/or kernel updates. Fixing these can be a huge pain, that part can be deleted if it's not applicable to your setup.
 
