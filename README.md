@@ -2,15 +2,17 @@
 
 These are basic quality of life bash scripts for things I do regularly.
 
-To install most dependencies on Arch run:
+This README contains top level header sections for a few longer and more complex scripts then a top level heading collecting information on the smaller scripts, a heading for a few scripts which worked in concert for producing my phd thesis and presentation, and finally on the scripts that remain WIPs for now. Online you can easily navigate to the sections using github's default table of contents accessed by hitting the hamburger menu in the upper left of this README display.
 
-    sudo pacman -S --needed pacman-contrib fwupdmgr rclone pandoc neovim reflector fzf
+Each script includes information about it's usage and dependencies. But to install most dependencies from official repos on Arch Linux run:
 
-Paru must be manually installed if you haven't already installed it. `gnome-pomodoro` can be installed with the PKGBUILD from the AUR (where I'm the current maintainer of the PKGBUILD).
+```bash
+sudo pacman -S --needed entr espeak-ng fd ffmpeg fwupd fzf imagemagick jpegoptim man-db mpv neovim optipng pacman-contrib pandoc poppler rclone reflector rsync ssh sshfs tmux tigervnc xdg-utils youtube-dl
+```
+
+Finally, Paru must be manually installed if you haven't already installed it. `gnome-shell-pomodoro` and `gdcm` can be installed from the AUR.
 
 Before running any script with rclone, you need to configure it to use your cloud drive of choice.
-
-This README contains top level header sections for a few longer and more complex scripts then a top level heading collecting information on the smaller scripts, a heading for a few scripts which worked in concert for producing my phd thesis and presentation, and finally on the scripts that remain WIPs for now. Online you can easily navigate to the sections using github's default table of contents accessed by hitting the hamburger menu in the upper left of this README display.
 
 # pac
 
@@ -100,7 +102,7 @@ The available options are:
     -o or --other: Update non-system packages (those not included in the basic update).
     -p or --post: Perform cleaning functions (usually done at the end of full update).
 
-**dependencies:** `pacman`, `reflector`, `fwupdmgr`, `paru`, `pacman-contrib`, `neovim` with vim-plug (see my dotfiles), `tmux` with tmux-plugin-manager, anaconda python user installation with a base environment
+**dependencies:** `pacman`, `reflector`, `fwupd`, `paru`, `pacman-contrib`, `neovim` with vim-plug (see my dotfiles), `tmux` with tmux-plugin-manager, anaconda python user installation with a base environment
 
 Note: much of this could be accomplished with pacman hooks but not all of this concerns `pacman` and other updaters could be added in the future. Power check is there because I've had major system corruption more than once due to a failing battery cutting power in the middle of firmware and/or kernel updates. Fixing these can be a huge pain, that part can be deleted if it's not applicable to your setup.
 
@@ -121,7 +123,7 @@ The script also includes an array of directories (BackupList) that you want to i
 
 # chill
 
-uses `youtube-dl` with `mpv` to stream music from youtube.
+Uses `youtube-dl` with `mpv` to stream music from youtube.
 
 - **usage:**
 
@@ -137,7 +139,7 @@ The available options are:
     -p or --piano: Play relaxing piano music using mpv.
     -s or --social: Play social network music using mpv.
 
--**dependencies**: `youtube-dl`, `mpv`
+- **dependencies**: `youtube-dl`, `mpv`
 
 Note: The script uses YouTube URLs to play the music. Make sure you have an internet connection before running the script. The mpv player will automatically play the music at a volume of 50%. You can adjust the volume by modifying the --volume parameter in the script.
 
@@ -155,19 +157,34 @@ If no filename is specified, the script will present a list of existing markdown
 
 Converts a Microsoft Word document to Markdown, puts the figures in a folder. Just wraps pandoc with some nice options.
 
-- usage: `word2md <markdownFile.md>`
-- dependencies: `pandoc`
+- **usage:** `word2md <wordfile.docx>`
+- **dependencies:** `pandoc`
+
+## md2word
+
+Same as `word2md` but opposite direction.
+
+- **usage:** `md2word <markdownFile.md>`
+- **dependencies:** `pandoc`
 
 # Tiny Scripts
 
 These are little scripts which need minimal documentation and are just barely above the complexity of a bash alias. (less than 20 lines)
 
+## gitbot
+
+This bash script is designed to automatically update a specified list of Git repositories. It does this by first fetching the latest changes from the remote repository, and then checking if the remote repository is ahead of the local repository. If the remote repository is ahead, the script does nothing. If the remote repository is not ahead, the script adds all changes in the local repository, commits the changes, and pushes the changes to the remote repository.
+
+To use this script, simply edit the `Repos` array to specify the list of repositories that you want to update. The script will then iterate over each repository in the list, updating it as necessary. Note that the paths specified in the Repos array should be relative to the home directory (specified by the HOME variable) and should include the trailing slash.
+
+This script is intended to be run on a regular basis (e.g. using a systemd-user timer) to ensure that the specified repositories are always up to date. You can see my implementation of that here: https://github.com/liamtimms/configs/blob/master/systemd/user/gitbot.timer and https://github.com/liamtimms/configs/blob/master/systemd/user/gitbot.service
+
 ## goodmorning
 
 Greets the user in the morning, displays weather for 5 minutes (get coffee!), then starts `gnome-shell-pomodoro` and opens a file called `~/Documents/notes/todo.md` using the `notes` script here.
 
-- usage: `goodmorning`,
-- dependencies: the `notes` script, `gnome-pomodoro`, `espeak`
+- **usage:** `goodmorning`,
+- **dependencies:** the `notes` script, `gnome-shell-pomodoro`, `espeak-ng`
 
 ## gourcegif
 
@@ -230,11 +247,8 @@ Takes markdown file and converts it to a pdf document (`filename_notes.pdf`) and
 Takes screenshots using the gnome-screenshot command and saves them in the ~/Pictures/Screenshots directory with a filename that includes the current date and time. The script will take a screenshot every two minutes indefinitely, until it is interrupted with the CTRL+Z key combination. This is useful for creating time lapse videos of long projects.
 
 - **usage**: `screenshots`
-- **dependencies**: using the GNOME desktop
+- **dependencies**: `gnome-screenshot` (included if using the GNOME desktop)
 - **configuration:** one can very easily switch out the screenshot tool for one like `scrot` if not on GNOME
-
-./word2md
-./md2word
 
 ## imgopt
 
@@ -284,6 +298,18 @@ Note: for my current setup, this script has been superceded by Vimwiki and is no
 - **configuration:** make sure you are happy with the journal path and change the author name if you use this.
 - **dependencies**: just set the `$EDTIOR` environmental variable.
 
+## videomaker
+
+Used to create a video from a series of images. The images are first cropped and then a logo is added to each image. The resulting images are used to create a video using ffmpeg, which is then reversed and combined with a copy of itself to create a looping video.
+
+- **usage:**
+
+To use this script, make sure that you have the dependencies installed and that you have a series of images in the src directory. Then, simply run the script and provide the input file as the first argument and the output file as the second argument. The resulting video will be saved as output_together.mp4.
+
+You'll need to adjust paths, file names, etc. but it can be a useful starting point.
+
+- **dependencies:** `mogrify` and `composite` (include in `imagemagick`), `ffmpeg`
+
 # Scripts Related to Writing My PhD Thesis (and Papers)
 
 These scripts were used primarily for producing my phd thesis. However, they can be adpated for other uses or be instructional for writing your own approaches.
@@ -292,7 +318,7 @@ These scripts were used primarily for producing my phd thesis. However, they can
 
 Allows you to quickly and easily convert a markdown file into a PDF using pandoc. It also includes an option to live update the PDF preview as you make changes to the markdown file.
 
-### Usage
+- **usage:**
 
 ```bash
 pdfpreview [-h|--help] [-t|--thesis] [-p|--paper] <markdown input file>
@@ -312,8 +338,9 @@ To convert a markdown file called paper.md into a PDF for use in a paper, using 
 
 Converts Markdown to pdf on each save to preview a document.
 
-- usage: `pdfpreview <markdownFile.md>`
-- dependencies: `pandoc`, `entr`, `zathura`
+- **dependencies:** `pandoc`, `entr`, `xdg-utils` to get the `xdg-open` command, a pdf viewer set as your xdg default
+
+A live refreshing pdf viewer is recommended (`zathura` or Evince AKA GNOME Document Viewer work well). You can also switch out `xdg-open` for just saying `zathura` in the script.
 
 ## gitpaper
 
@@ -326,9 +353,29 @@ The output file will be created in the same directory as the input file, with "\
 
 ## thesis_combine
 
+This bash script is designed to continuously monitor a list of chapters specified in a file (`$inputfile`) and combine them into a single file (`$outputfile`) whenever any changes are made to the chapters. The script runs indefinitely, using the `entr` utility to check for changes in the chapters directory and execute the command to combine the chapters. The command uses cat to concatenate the chapters listed in `$list` and write the combined content to `$outputfile`. The script also displays a timestamp and message each time it updates the `$outputfile`.
+
+- **usage:**
+
+To use the script one needs to have a set of individual markdown files for each chapter then organize them in the desired order in the `$inputfile`. For example you might make a file called `list_chapts.txt` which contains:
+
+```markdown
+chapters/introduction.md
+chapters/methods.md
+chapters/results.md
+chapters/conclusions.md
+```
+
+The resulting document will preserve this order and update the output file whenever changes are made to any chapter.
+
+- **dependencies:** `entr`
+
 ## thesis_make
 
-./present_combine
+Simply calls other thesis compilation and update scripts with appropriate options and files.
+
+- **usage:** `thesis_make` inside a folder with a `list_chapts.txt` pointing to individual chapters
+- **dependencies:** `gitpaper`, `thesis_combine`, `pdfpreview`
 
 # Work-In-Progress Scripts
 
@@ -336,8 +383,8 @@ The output file will be created in the same directory as the input file, with "\
 
 Implementing `git` like syntax for interacting with google drive. I am not currently using this since newer versions of Nautilus have usable google drive support built in.
 
-- usage: implements easier syntax for rclone, including cloning from google drive, pulling updates from google drive, and pushing new files to google drive
-- dependencies: `rclone` configured for google drive
+- **usage:** implements easier syntax for rclone, including cloning from google drive, pulling updates from google drive, and pushing new files to google drive
+- **dependencies:** `rclone` configured for google drive
 
 ## goodnight
 
