@@ -149,13 +149,6 @@ If no filename is specified, the script will present a list of existing markdown
 - **configuration**: you'll want to edit the boiler it puts in new notes since that has my name in it and may also wish to change the default location of the `notes` directory.
 - **dependencies:** `fzf`,
 
-## pdfpreview
-
-Converts Markdown to pdf on each save to preview a document.
-
-- usage: `pdfpreview <markdownFile.md>`
-- dependencies: `pandoc`, `entr`, `zathura`
-
 ## screenshots
 
 ## word2md
@@ -295,15 +288,46 @@ Note: for my current setup, this script has been superceded by Vimwiki and is no
 
 These scripts were used primarily for producing my phd thesis. However, they can be adpated for other uses or be instructional for writing your own approaches.
 
+## pdfpreview
+
+Allows you to quickly and easily convert a markdown file into a PDF using pandoc. It also includes an option to live update the PDF preview as you make changes to the markdown file.
+
+### Usage
+
+```bash
+pdfpreview [-h|--help] [-t|--thesis] [-p|--paper] <markdown input file>
+```
+
+The available options are:
+
+    -h or --help: Display usage information.
+    -t or --thesis: Use pandoc with the short-captions filter to convert the markdown file into a PDF for use in a thesis document.
+    -p or --paper: Use pandoc to convert the markdown file into a PDF for use in a paper.
+
+Example
+
+To convert a markdown file called paper.md into a PDF for use in a paper, using the live update feature, run the following command:
+
+./pandoc_live.sh -p paper.md
+
+Converts Markdown to pdf on each save to preview a document.
+
+- usage: `pdfpreview <markdownFile.md>`
+- dependencies: `pandoc`, `entr`, `zathura`
+
 ## gitpaper
 
 Script is designed to help with version control when working with markdown files. It takes a single markdown file as input and processes it to create a new file with each sentence on a new line. This can make it easier to track changes in Git, as each sentence will be treated as a separate line for the purpose of version control.
 
-To use the script, simply run it with the path to the input markdown file as the argument. The output file will be created in the same directory as the input file, with "\_git.md" appended to the filename. The script also uses the `entr` utility to continuously monitor the input file for changes and update the output file accordingly. This can be helpful if you are actively editing the input file and want to see the changes reflected in the output file in real-time.
+The output file will be created in the same directory as the input file, with "\_git.md" appended to the filename. The script also uses the `entr` utility to continuously monitor the input file for changes and update the output file accordingly. This can be helpful if you are actively editing the input file and want to see the changes reflected in the output file in real-time.
 
-./gitpaper
-./thesis_combine
-./thesis_make
+- **usage:** `gitpaper <somemarkdownfile>`
+- **dependencies:** `entr`
+
+## thesis_combine
+
+## thesis_make
+
 ./present_combine
 
 # Work-In-Progress Scripts

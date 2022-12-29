@@ -2,4 +2,7 @@
 # screenshot every two minutes
 # interupt this with crtl+z
 
-while true; do scrot -d 120 "%Y-%m-%d-%H:%M:%S.png" -e "mv $f ~/Pictures/screenshots"; done
+while true; do
+	gnome-screenshot -f ~/Pictures/Screenshots/auto_$(date +%Y-%m-%d_%H-%M-%S).png
+	sleep 120
+done

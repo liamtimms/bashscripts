@@ -7,7 +7,7 @@ printf -v d '%(%Y-%m-%d)T' -1
 filename="${d}.md"
 
 if [ -f "${filename}" ]; then
-	nvim ${filename}
+	$EDITOR ${filename}
 else
 
 	touch ${filename}
@@ -32,6 +32,6 @@ else
 ## Goals For Tomorrow
 EOT
 
-	nvim ${filename}
+	$EDITOR ${filename}
 
 fi

@@ -107,6 +107,7 @@ function clean_cache() {
 	cd ~/.cache/paru/clone
 	trash $(fd -I -e pkg.tar.zst --changed-before 14d)
 	trash $(fd -I -e tar.gz --changed-before 14d)
+	trash $(fd -I -e tar.xz --changed-before 14d)
 	cd -
 
 	echo -e "\nCleaning: Unused Plugins\n"
@@ -126,7 +127,6 @@ function post() {
 
 function full_update() {
 	pre
-	update_mirror_list
 	update_paru
 	update_others
 	post
@@ -146,21 +146,25 @@ while getopts ":hfbop" opt; do
 		;;
 
 	f | full)
+		# Update and clean all supported system components
 		full_update
 		exit 0
 		;;
 
 	b | basic)
+		# perform preupdate functions then update only system level packages
 		basic_update
 		exit 0
 		;;
 
 	o | other)
+		# update nonssytem packages (those not included in basic update)
 		update_others
 		exit 0
 		;;
 
 	p | post)
+		# perform cleaning functions, included in full update but not basic
 		post
 		exit 0
 		;;

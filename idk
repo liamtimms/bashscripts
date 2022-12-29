@@ -3,12 +3,12 @@
 
 MINPARAMS=1
 Usage() {
-	echo "$0; This script gives info on a command"
+	echo "$0; This script gives info on a command. Please enter a command as an argument."
 	exit 1
 }
 inputcommand=$1
 
-whatis "${inputcommand}"
+echo -e "\033[1m$(whatis "${inputcommand}")\033[0m"
 
 # cheat.sh
 curl cheat.sh/"${inputcommand}"
