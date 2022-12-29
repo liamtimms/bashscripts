@@ -34,6 +34,8 @@ The available options are:
 
 Run the script, and fzf will present you with a search interface. Begin typing the name of the package(s) you want to (un)install, and use the space bar to preview information about packages. To select multiple packages, flag them by hitting Tab. When you have set the package(s) you want, press Enter to pass the selection to pacman.
 
+- **dependencies:** `fzf`, `pacman`
+
 ### Customization
 
 You can customize the behavior of the fzf search windows by modifying the \_fzf_flags variable at the top of the script. For example, you can change the `--ansi` flag to `--no-ansi` to disable ANSI color output, or you can add the --reverse flag to reverse the order of the search results. Consult the fzf documentation for a complete list of options.
@@ -100,7 +102,7 @@ The available options are:
     -o or --other: Update non-system packages (those not included in the basic update).
     -p or --post: Perform cleaning functions (usually done at the end of the full update).
 
-**dependencies:** `pacman`, `reflector`, `fwupd`, `paru`, `pacman-contrib`, `neovim` with vim-plug (see my dotfiles), `tmux` with tmux-plugin-manager, anaconda python user installation with a base environment
+- **dependencies:** `pacman`, `reflector`, `fwupd`, `paru`, `pacman-contrib`, `neovim` with vim-plug (see my dotfiles), `tmux` with tmux-plugin-manager, anaconda python user installation with a base environment
 
 Note: much of this could be accomplished with pacman hooks, but not all of this concerns `pacman` and other updaters could be added in the future. The power check is there because I've had significant system corruption more than once due to a failing battery cutting power in the middle of firmware and/or kernel updates. Fixing these can be a huge pain; that part can be deleted if it does not apply to your setup.
 
@@ -123,7 +125,7 @@ The script also includes an array of directories (BackupList) that you want to h
 
 Uses `youtube-dl` with `mpv` to stream music from youtube.
 
-- **usage:**
+## Usage
 
 ```bash
 chill [-h|--help] [-v|--version] [-l|--lofi] [-p|--piano] [-s|--social]
@@ -148,22 +150,6 @@ If no filename is specified, the script will present a list of existing markdown
 - **usage:** `notes <NameOfaNewNote>` or just use `notes` to select from a list of existing notes
 - **configuration**: you'll want to edit the boiler it puts in new notes since that has my name in it, and you may also wish to change the default location of the `notes` directory.
 - **dependencies:** `fzf`,
-
-## screenshots
-
-## word2md
-
-Converts a Microsoft Word document to Markdown and puts the figures in a folder. It just wraps pandoc with some nice options.
-
-- **usage:** `word2md <wordfile.docx>`
-- **dependencies:** `pandoc`
-
-## md2word
-
-Same as `word2md` but opposite direction.
-
-- **usage:** `md2word <markdownFile.md>`
-- **dependencies:** `pandoc`
 
 # Tiny Scripts
 
@@ -307,6 +293,20 @@ To use this script, make sure that you have the dependencies installed and that 
 You'll need to adjust paths, file names, etc., but it can be a helpful starting point.
 
 - **dependencies:** `mogrify` and `composite` (include in `imagemagick`), `ffmpeg`
+
+## word2md
+
+Converts a Microsoft Word document to Markdown and puts the figures in a folder. It just wraps pandoc with some nice options.
+
+- **usage:** `word2md <wordfile.docx>`
+- **dependencies:** `pandoc`
+
+## md2word
+
+Same as `word2md` but opposite direction.
+
+- **usage:** `md2word <markdownFile.md>`
+- **dependencies:** `pandoc`
 
 # Scripts Related to Writing My PhD Thesis (and Papers)
 
