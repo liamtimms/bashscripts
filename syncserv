@@ -1,3 +1,0 @@
-#!/bin/bash
-
-timeout 8h syncthing
