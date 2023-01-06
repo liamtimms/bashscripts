@@ -108,6 +108,7 @@ function clean_cache() {
 	trash $(fd -I -e pkg.tar.zst --changed-before 14d)
 	trash $(fd -I -e tar.gz --changed-before 14d)
 	trash $(fd -I -e tar.xz --changed-before 14d)
+	trash $(fd -I -e tar.bz2 --changed-before 14d)
 	cd -
 
 	echo -e "\nCleaning: Unused Plugins\n"
