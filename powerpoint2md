@@ -1,0 +1,17 @@
+#!/bin/bash
+# convert word docx to markdown, extract images into a directory
+
+MINPARAMS=1
+
+Usage() {
+	echo "$0; This script requires a source file"
+	exit 1
+}
+inputfile=$1
+# read inputfile
+outputfile=${inputfile/.pptx/.md}
+outputmedia=${inputfile/.pptx/_media}
+echo "working..."
+pptx2md "$inputfile" -o "$outputfile" -i "$outputmedia"
+echo "done"
+#!/bin/bash
