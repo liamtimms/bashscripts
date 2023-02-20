@@ -43,9 +43,10 @@ function update_package_lists() {
 	# update package list
 	echo -e "Updating: package list"
 	dir=$CUSTOM_CONFIG_HOME/package_info/
+	host=$(hostnamectl | grep "Static hostname" | cut -d ':' -f 2 | tr -d ' ')
 	declare -a package_lists=("qne" "qme" "qnett" "qmett" "qtd" "qtdq")
 	for pacman_arg in "${package_lists[@]}"; do
-		pacman -Q${pacman_arg} >"${dir}"${pacman_arg}
+		pacman -Q${pacman_arg} >"${dir}"${pacman_arg}"_"${host}".txt"
 	done
 }
 
