@@ -1,0 +1,55 @@
+#!/bin/bash
+# This script is used to update the Ubuntu system
+
+# Update the system
+function update_system() {
+	echo -e "\nUpdating the system"
+	sudo apt-get update
+	sudo apt-get upgrade -y
+	snap refresh
+}
+
+function update_other() {
+	echo -e "\nUpdating: Liam's bashscripts\n"
+	git -C ~/bin/bashscripts pull
+
+	echo -e "\nUpdating: Rust\n"
+	rustup update
+
+	echo -e "\nUpdating: Firmware\n"
+	fwupdmgr refresh
+	fwupdmgr get-updates
+
+	echo -e "\nUpdating: Neovim Plugins\n"
+	nvim --headless +PlugUpdate +PlugUpgrade +qa
+	nvim --headless +CocUpdate +qa
+	nvim --headless +TSUpdate +qa
+
+	echo -e "\nUpdating: Tmux Plugins\n"
+	~/.tmux/plugins/tpm/bin/update_plugins all
+
+	# echo -e "\nUpdating: Boot Loader\n"
+	# sudo bootctl update
+
+	echo -e "\nUpdating: Anaconda\n"
+	conda update --all
+	conda update --all -n analysis
+
+	echo -e "\nUpdating: NPM\n"
+	npm update -g
+
+}
+
+function clean() {
+	echo -e "\nCleaning the system"
+	sudo apt-get autoremove -y
+	sudo apt-get autoclean
+}
+
+function main() {
+	update_system
+	update_other
+	clean
+}
+
+main
