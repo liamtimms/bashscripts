@@ -1,0 +1,182 @@
+#!/bin/bash
+# this script runs pygrasp on raw data transferred to a local directory
+
+function set_vars() {
+
+	filter_string="MRU"
+
+	# set variables
+	# return variables
+	env_path="$HOME/anaconda3/envs"
+	code_path="$HOME/Documents/Research/pygrasp/pyGRASP/"
+	# needs to be set by mounting the smb share
+	raw_data_path="/run/user/10823/gvfs/smb-share:server=10.72.80.129,share=mrirawdata/RawDataStore"
+	input_path="/mnt/disk2/liam/pygrasp_data/queue/"
+	output_path="/fileserver/external/body/radialData/processed/"
+	working_path="/mnt/disk2/liam/pygrasp_data/working/"
+	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$env_path"/dce_env/lib
+}
+
+# function remove_done_from_queue() {
+#
+#
+#
+# }
+
+function copy_done() {
+	# copy done files to output path
+	# folders that are completed have 7 items
+
+	find "$working_path" -type d -exec sh -c 'test $(ls -1 "{}" | wc -l) -eq 7' \; -print >/tmp/done.txt
+	echo $(cat /tmp/done.txt)
+
+	# in parallel
+	cat /tmp/done.txt | xargs -P4 -I '{}' rsync -azchP '{}' "$output_path"
+
+	# remove done folders from working path
+	cat /tmp/done.txt | xargs -P4 -I '{}' rm -rf '{}'
+
+}
+
+function precheck() {
+	# check for dependencies
+	# check for conda
+
+	# check code path
+	if [ -d "$code_path" ]; then
+		echo "Code path exists"
+	else
+		echo "Code path $code_path does not exist"
+		exit
+	fi
+
+	mkdir -p $input_path
+	mkdir -p $working_path
+	mkdir -p $output_path
+
+	# check raw data path
+	if [ -d "$raw_data_path" ]; then
+		echo "Raw data path exists"
+	else
+		echo "Raw data path $raw_data_path does not exist"
+		exit
+	fi
+
+	which conda
+	if [ $? -eq 0 ]; then
+		echo "Conda is installed"
+	else
+		echo "Conda is not installed"
+		exit
+	fi
+
+	# check for environment
+	env_name="dce_env"
+	conda env list | grep -q "^${env_name}[[:space:]]"
+	if [ $? -eq 0 ]; then
+		echo "Environment $env_name exists"
+	else
+		echo "Environment $env_name does not exist"
+		echo "Creating environment $env_name"
+		conda env create --file $code_path/environment.yml
+	fi
+}
+
+function find_data() {
+	# find data to transfer
+	# find files with .dat extension
+	# compare to processed or processing data
+	echo "Looking in $raw_data_path for files with extension .dat"
+	raw_data_list=$(find $raw_data_path -name "*.dat" -type f -printf "%f\n" -mtime -90 | grep $filter_string | sort)
+	queued_list=$(find $input_path -name "*.dat" -type f -printf "%f\n" | sort)
+	echo "found queued list:" $queued_list
+	processing_list=$(find $output_path -name "*.dat" -type f -printf "%f\n" | sort)
+	echo "found processed list:" $processing_list
+	working_list=$(find $working_path -name "*.dat" -type f -printf "%f\n" | sort)
+	echo "found working_list list:" $working_list
+	# filter raw_data_list to only include files not in queued_list, processing_list, or working_list
+	raw_data_list=$(comm -23 <(echo "$raw_data_list") <(echo "$queued_list") | comm -23 - <(echo "$processing_list") | comm -23 - <(echo "$working_list"))
+	echo "Raw data list: $raw_data_list"
+}
+
+function transfer_data() {
+	# transfer data to local directory
+	for file in $raw_data_list; do
+		# get full path now
+		file_path=$(find $raw_data_path -name "$file" -type f)
+		# file_path=$(fdfind -e dat -i "$file" -t f -p $raw_data_path)
+		echo "File path: $file_path to $input_path"
+		# cp $raw_data_path/$file $input_path
+		# check input path is a file
+		if [ -f "$file_path" ]; then
+			rsync -azvhP --progress "$file_path" "$input_path"
+			echo "File $file_path transferred"
+		fi
+	done
+}
+
+function find_queued_data() {
+	# find files with .dat extension
+	queued_list=$(find $input_path -name "*.dat" -type f -printf "%f\n" | sort)
+	queued_list=$(echo "$queued_list" | grep $filter_string | sort)
+	queued_list=$(comm -23 <(echo "$queued_list") <(echo "$processing_list"))
+}
+
+function make_mru_csv() {
+	# make mru csv
+	# return mru csv path
+	echo "Names,Acquisition Date,MRN,reconFile1,reconFile2,reconFile3,reconFile4,timePoints1,timePoints2,timePoints3,timePoints4" >$inputOutput_path/MRU.csv
+	acq_date="YYYYMMDD"
+	data_path="$inputOutput_path"/"$file"
+	echo "$name,$acq_date,$mrn,$data_path,,,,156,,," >>$inputOutput_path/MRU.csv
+}
+
+function run_pygrasp() {
+	cat $inputOutput_path/MRU.csv
+
+	$env_path/dce_env/bin/python3.7 $code_path/convert_raw_to_dataset.py -i $inputOutput_path/MRU.csv -pg $code_path/parameters/grasp_params.json -pp $code_path/parameters/p_proc_params.json -o $inputOutput_path -fr True -fc True -nspkc 500
+
+	$env_path/dce_env/bin/python3.7 $code_path/demo_reconstruction.py -p $code_path/parameters/grasp_params.json -d $inputOutput_path/loader.csv -o $inputOutput_path/ -sid sub-1
+
+	$env_path/dce_env/bin/python3.7 $code_path/slice_to_vol.py -p $code_path/parameters/p_proc_params.json -d $inputOutput_path/sub-1/*/raw-rec/ -o $inputOutput_path/sub-1/
+}
+
+function main() {
+	set_vars
+	# precheck
+	# copy_done
+	# step 1: check for data to transfer
+	find_data
+	# step 2: transfer data
+	transfer_data
+	find_queued_data
+	echo "found queued list" $queued_list
+	for file in $queued_list; do
+		cat $file
+		name_and_id=$(read_twix_identifiers "${input_path}/${file}")
+		name=$(echo "$name_and_id" | cut -d ' ' -f 1)
+		mrn=$(echo "$name_and_id" | cut -d ' ' -f 2)
+		name="${name:=$(basename "$file" .dat)}"
+		mrn="${mrn:=MRN}"
+		echo "name: $name"
+		echo "mrn: $mrn"
+		base_name="$name"
+		inputOutput_path="$working_path"/"$base_name"
+		# make a working directory for the file
+		mkdir -p "$inputOutput_path"
+		mv "${input_path}/${file}" "${inputOutput_path}"
+		# step 3: setup pygrasp
+		make_mru_csv
+		# step 4: run pygrasp
+		echo "Running pygrasp on $file"
+		run_pygrasp
+		unset name
+		unset mrn
+		# step 5: transfer results
+		copy_done
+	done
+	transfer_data
+	# step 6: clean up
+}
+
+main

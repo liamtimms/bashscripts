@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# Read in TWIX tag from a Siemens raw data file
+#
+
+# Check for existence of input file
+if [ ! -f $1 ]; then
+	echo "Error: file $1 does not exist"
+	exit 1
+fi
+
+# Check it is a Siemens raw data file
+
+# Assign input arguments
+file=$1
+# tag=$2
+
+# Get the tag value
+name=$(head -n 150 $file | grep --binary-files=text -Po '(?<=<ParamString."tPatientName">  { ").*?(?="  })' | tr '^' '_')
+ID=$(head -n 150 $file | grep --binary-files=text -Po '(?<=<ParamString."PatientID">  { ").*?(?="  })' | tr '^' '_')
+echo $name $ID
