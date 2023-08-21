@@ -16,6 +16,6 @@ file=$1
 # tag=$2
 
 # Get the tag value
-name=$(head -n 150 $file | grep --binary-files=text -Po '(?<=<ParamString."tPatientName">  { ").*?(?="  })' | tr '^' '_')
-ID=$(head -n 150 $file | grep --binary-files=text -Po '(?<=<ParamString."PatientID">  { ").*?(?="  })' | tr '^' '_')
+name=$(head -n 150 $file | grep --binary-files=text '"tPatientName">' | awk -F'"' '{print $4}' | tr -d ',' | sed 's/\^/_/g; s/ /_/g')
+ID=$(head -n 150 $file | grep --binary-files=text '"PatientID">' | awk -F'"' '{print $4}' | tr -d ',' | sed 's/\^/_/g; s/ /_/g')
 echo $name $ID
