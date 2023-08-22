@@ -3,7 +3,7 @@
 
 function set_vars() {
 
-	filter_string="MRU"
+	filter_string="DYNAMIC"
 	# filter_string="STARVIBE_6min"
 	# filter_string="STARVIBE_DYNAMIC"
 
@@ -11,12 +11,14 @@ function set_vars() {
 	# return variables
 	env_path="$HOME/miniconda3/envs"
 	code_path="/fileserver/fastscratch/liam/mru/pygrasp/pyGRASP/"
+	# subject_info_path="/fileserver/external/body/radialData/subject_info/"
 	# needs to be set by mounting the smb share
 	raw_data_path="/mnt/simon_server/RawDataStore/"
 	input_path="/home/ch243636/Documents/pygrasp_data/queue/"
 	# output_path="/fileserver/external/body/radialData/processed/"
-	output_path="/fileserver/external/body/radialData/processed/reruns"
 	working_path="/home/ch243636/Documents/pygrasp_data/working/"
+	output_path="/fileserver/external/body/radialData/processed/reruns"
+	recon_path="/fileserver/external/body/abd/GraspRecons/reconResultsGRASP/reruns/"
 	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$env_path"/dce_env/lib
 }
 
@@ -85,7 +87,7 @@ function find_data() {
 	# compare to processed or processing data
 	echo "Looking in $raw_data_path for files with extension .dat"
 	raw_data_list=$(find $raw_data_path -name "*.dat" -type f -printf "%f\n" -mtime -90 -size +2G | grep $filter_string | sort)
-    
+
 	queued_list=$(find $input_path -name "*.dat" -type f -printf "%f\n" -size +2G | sort)
 	echo "found queued list:" $queued_list
 	processing_list=$(find $output_path -name "*.dat" -type f -printf "%f\n" | sort)
@@ -116,9 +118,9 @@ function transfer_data() {
 function find_queued_data() {
 	# find files with .dat extension
 	queued_list=$(find $input_path -size +2097151k -name "*.dat" -type f -printf "%f\n" | sort)
-    # echo $queued_list
+	# echo $queued_list
 	queued_list=$(echo "$queued_list" | grep $filter_string | sort)
-    echo $queued_list
+	echo $queued_list
 	queued_list=$(comm -23 <(echo "$queued_list") <(echo "$processing_list"))
 }
 
@@ -126,13 +128,12 @@ function make_mru_csv() {
 	# make mru csv
 	# return mru csv path
 	echo "Names,Acquisition Date,MRN,reconFile1,reconFile2,reconFile3,reconFile4,timePoints1,timePoints2,timePoints3,timePoints4" >$inputOutput_path/MRU.csv
-	acq_date="${formatted_date:=YYYYMMDD}"
 	data_path="$inputOutput_path"/"$file"
 	echo "$name,$acq_date,$mrn,$data_path,,,,156,,," >>$inputOutput_path/MRU.csv
 }
 
 function run_pygrasp() {
-	cat $inputOutput_path/MRU.csv
+	cat "$inputOutput_path/MRU.csv"
 
 	$env_path/dce_env/bin/python3.7 $code_path/convert_raw_to_dataset.py -i $inputOutput_path/MRU.csv -pg $code_path/parameters/grasp_params.json -pp $code_path/parameters/p_proc_params.json -o $inputOutput_path -fr True -fc True -nspkc 500 -igpu True
 
@@ -141,21 +142,47 @@ function run_pygrasp() {
 	$env_path/dce_env/bin/python3.7 $code_path/slice_to_vol.py -p $code_path/parameters/p_proc_params.json -d $inputOutput_path/sub-1/*/raw-rec/ -o $inputOutput_path/sub-1/
 }
 
+function set_info() {
+	name_and_id=$(read_twix_identifiers "${input_path}/${file}")
+	name=$(echo "$name_and_id" | cut -d ' ' -f 1 | grep -v 'xxxxx')
+	mrn=$(echo "$name_and_id" | cut -d ' ' -f 2 | grep -v 'xxxxx')
+	name="${name:=Lastname_Firstname}"
+	name="$(echo ${name} | awk 'BEGIN{FS=OFS="_"} {for (i=1; i<=NF; i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))} 1')"
+	if [ "$name" == "Lastname_Firstname" ]; then
+		echo "Subject name not found in raw data, checking spreadsheet."
+
+	fi
+
+	mrn="${mrn:=MRN}"
+	date_section=$(echo "$file" | grep -o 'D[0-9]\{6\}' | cut -d 'D' -f 2)
+	day="${date_section:0:2}"
+	month="${date_section:2:2}"
+	year="${date_section:4:2}"
+	formatted_date="20${year}${month}${day}"
+	alt_formatted_date="${month}-${day}-20${year}"
+	acq_date="${formatted_date:=YYYYMMDD}"
+	time=$(echo "$file" | grep -o 'T[0-9]\{6\}' | cut -d 'F' -f 2)
+	base_name="$(basename "$file" .dat)"
+
+}
+
+function clear_info() {
+	unset name
+	unset mrn
+	unset acq_date
+}
+
 function process_list() {
-    for file in $queued_list; do
+	for file in $queued_list; do
 		echo "starting: $file"
-		name_and_id=$(read_twix_identifiers "${input_path}/${file}")
-		name=$(echo "$name_and_id" | cut -d ' ' -f 1)
-		mrn=$(echo "$name_and_id" | cut -d ' ' -f 2)
-		echo $name
-		mrn="${mrn:=MRN}"
-		date_section=$(echo "$file" | grep -o 'D[0-9]\{6\}' | cut -d 'D' -f 2)
-		formatted_date="20${date_section:4:2}${date_section:2:2}${date_section:0:2}"
-		# echo "name: $name"
-		# echo "mrn: $mrn"
-		# base_name=$(basename "$file" .dat)
-		base_name="${name}-MRN${mrn}-${formatted_date}"
-		inputOutput_path="$working_path"/"$base_name"
+		set_info
+		if [ "$name" == "Lastname_Firstname" ]; then
+			echo "Subject name not found in raw data, using file base name."
+			dir_name="${base_name}"
+		fi
+		dir_name="${name}-MRN${mrn}-${alt_formatted_date}"
+
+		inputOutput_path="${working_path}/${dir_name}"
 		# make a working directory for the file
 		mkdir -p "$inputOutput_path"
 		mv "${input_path}/${file}" "${inputOutput_path}"
@@ -164,13 +191,13 @@ function process_list() {
 		# step 4: run pygrasp
 		echo "Running pygrasp on $file"
 		run_pygrasp
-		unset name
-		unset mrn
-		unset formatted_date
-		unset acq_date
 		# step 5: transfer results
 		# copy_done
 	done
+}
+
+function move_nifit_to_graprecon_results() {
+	echo "blah"
 }
 
 function main() {
@@ -182,8 +209,8 @@ function main() {
 	# step 2: transfer data
 	# transfer_data
 	find_queued_data
-	echo "found queued list" $queued_list
-    process_list
+	echo "found queued list" "$queued_list"
+	process_list
 	# transfer_data
 	# step 6: clean up
 }
