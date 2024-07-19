@@ -104,13 +104,13 @@ function clean_cache() {
 	echo -e "\nCleaning: Pacman Cache\n"
 	paccache -r -k 3
 
-	echo -e "\nCleaning: AUR Cache\n"
-	cd ~/.cache/paru/clone
-	trash $(fd -I -e pkg.tar.zst --changed-before 14d)
-	trash $(fd -I -e tar.gz --changed-before 14d)
-	trash $(fd -I -e tar.xz --changed-before 14d)
-	trash $(fd -I -e tar.bz2 --changed-before 14d)
-	cd -
+	# echo -e "\nCleaning: AUR Cache\n"
+	# cd ~/.cache/paru/clone
+	# trash $(fd -I -e pkg.tar.zst --changed-before 14d)
+	# trash $(fd -I -e tar.gz --changed-before 14d)
+	# trash $(fd -I -e tar.xz --changed-before 14d)
+	# trash $(fd -I -e tar.bz2 --changed-before 14d)
+	# cd -
 
 	echo -e "\nCleaning: Unused Plugins\n"
 	~/.tmux/plugins/tpm/bin/clean_plugins
