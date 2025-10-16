@@ -30,8 +30,8 @@ function info() {
 }
 
 function update_mirror_list() {
-	# save and update mirror list, firmware and this repo and nvim plugs if it's been a week
-	if [[ $(find /etc/pacman.d/mirrorlist -mtime +8 -print) ]]; then
+	# save and update mirror list, firmware and this repo and nvim plugs if it's been a month
+	if [[ $(find /etc/pacman.d/mirrorlist -mtime +30 -print) ]]; then
 		echo -e "Updating: mirrorlist"
 		sudo cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 		sudo reflector --country 'United States' --country 'Canada' --latest 200 \
