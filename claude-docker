@@ -1,0 +1,266 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# --- Constants ---
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DEFAULT_DOCKERFILE="${SCRIPT_DIR}/claude-docker.Dockerfile"
+DEFAULT_IMAGE="claude-code-dev:latest"
+CUSTOM_IMAGE="claude-code-custom:latest"
+CLAUDE_HOST_PATH="${HOME}/.local/bin/claude"
+
+# --- State ---
+declare -a RW_DIRS=()
+declare -a RO_DIRS=()
+declare -a CLAUDE_ARGS=()
+declare -a GPU_ARGS=()
+declare -a TTY_ARGS=()
+declare -a VOLUME_ARGS=()
+declare -a EXTRA_CLAUDE_ARGS=()
+CUSTOM_DOCKERFILE=""
+IMAGE_OVERRIDE=""
+IMAGE=""
+CONTAINER_NAME=""
+NO_GPU=false
+FORCE_BUILD=false
+DRY_RUN=false
+WORKDIR=""
+RESUME_CONTINUE=false
+RESUME_ID=""
+
+# --- Functions ---
+
+function usage() {
+    cat <<'EOF'
+Usage: claude-docker [OPTIONS] [--] [CLAUDE_ARGS...]
+
+  -w, --workdir DIR      Project directory: mounted read-write and used as working
+                         directory inside the container (default: first -d dir)
+  -d, --dir DIR          Mount DIR read-write into the container (repeatable)
+  -r, --ro-dir DIR       Mount DIR read-only into the container (repeatable)
+  -f, --dockerfile FILE  Use a project-specific Dockerfile instead of the default
+  -i, --image IMAGE      Use a pre-built image name instead of the default
+  -c, --continue         Resume the most recent conversation (passes --continue to claude)
+  -R, --resume [ID]      Resume a specific session (passes --resume [ID] to claude)
+  --no-gpu               Skip NVIDIA runtime
+  --build                Force rebuild the base image
+  --dry-run              Print the docker command without executing
+  --name NAME            Custom container name
+  -h, --help             Show usage
+
+If no -w given, the first -d directory is used as the working directory.
+If no -d given either, the current directory is used.
+Everything after -- is passed to the claude binary.
+
+Examples:
+  claude-docker -w /path/to/project
+  claude-docker -w /path/to/proj1 -d /path/to/proj2 -- --model opus
+  claude-docker -d . -- -p "explain this codebase"
+  claude-docker -w . -r /data/shared/datasets
+  claude-docker -c -w .
+  claude-docker -R abc123 -w .
+  claude-docker -f ./Dockerfile.claude -w .
+EOF
+    exit 0
+}
+
+function die() { echo "error: $*" >&2; exit 1; }
+
+function parse_args() {
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -w|--workdir)
+                [[ -n "${2:-}" ]] || die "-w requires a directory argument"
+                WORKDIR="$2"; shift 2 ;;
+            -d|--dir)
+                [[ -n "${2:-}" ]] || die "-d requires a directory argument"
+                RW_DIRS+=("$2"); shift 2 ;;
+            -r|--ro-dir)
+                [[ -n "${2:-}" ]] || die "-r requires a directory argument"
+                RO_DIRS+=("$2"); shift 2 ;;
+            -f|--dockerfile)
+                [[ -n "${2:-}" ]] || die "-f requires a file argument"
+                CUSTOM_DOCKERFILE="$2"; shift 2 ;;
+            -i|--image)
+                [[ -n "${2:-}" ]] || die "-i requires an image name"
+                IMAGE_OVERRIDE="$2"; shift 2 ;;
+            -c|--continue)
+                RESUME_CONTINUE=true; shift ;;
+            -R|--resume)
+                if [[ -n "${2:-}" && "${2:0:1}" != "-" ]]; then
+                    RESUME_ID="$2"; shift 2
+                else
+                    RESUME_ID=""; shift
+                fi ;;
+            --no-gpu)
+                NO_GPU=true; shift ;;
+            --build)
+                FORCE_BUILD=true; shift ;;
+            --dry-run)
+                DRY_RUN=true; shift ;;
+            --name)
+                [[ -n "${2:-}" ]] || die "--name requires a name"
+                CONTAINER_NAME="$2"; shift 2 ;;
+            -h|--help)
+                usage ;;
+            --)
+                shift; CLAUDE_ARGS+=("$@"); break ;;
+            *)
+                CLAUDE_ARGS+=("$1"); shift ;;
+        esac
+    done
+
+    # Default workdir to first -d dir, or current directory
+    if [[ -z "$WORKDIR" ]]; then
+        if [[ ${#RW_DIRS[@]} -gt 0 ]]; then
+            WORKDIR="${RW_DIRS[0]}"
+        else
+            WORKDIR="$(pwd)"
+            echo "warning: no -w or -d given, using current directory: $WORKDIR" >&2
+        fi
+    fi
+
+    # Ensure workdir is also mounted read-write
+    WORKDIR="$(readlink -f "$WORKDIR")"
+    WORKDIR_ALREADY_MOUNTED=false
+    for d in "${RW_DIRS[@]}"; do
+        if [[ "$(readlink -f "$d")" == "$WORKDIR" ]]; then
+            WORKDIR_ALREADY_MOUNTED=true
+            break
+        fi
+    done
+    if ! $WORKDIR_ALREADY_MOUNTED; then
+        RW_DIRS+=("$WORKDIR")
+    fi
+
+    # Resolve all paths to absolute
+    for i in "${!RW_DIRS[@]}"; do
+        RW_DIRS[$i]="$(readlink -f "${RW_DIRS[$i]}")"
+    done
+    for i in "${!RO_DIRS[@]}"; do
+        RO_DIRS[$i]="$(readlink -f "${RO_DIRS[$i]}")"
+    done
+}
+
+function validate() {
+    command -v docker >/dev/null 2>&1 || die "docker is not installed or not in PATH"
+
+    for d in "${RW_DIRS[@]}"; do
+        [[ -d "$d" ]] || die "directory does not exist: $d"
+    done
+    for d in "${RO_DIRS[@]}"; do
+        [[ -d "$d" ]] || die "read-only directory does not exist: $d"
+    done
+
+    [[ -d "$WORKDIR" ]] || die "working directory does not exist: $WORKDIR"
+    [[ -e "$CLAUDE_HOST_PATH" ]] || die "claude binary not found at $CLAUDE_HOST_PATH"
+}
+
+function determine_image() {
+    if [[ -n "$IMAGE_OVERRIDE" ]]; then
+        IMAGE="$IMAGE_OVERRIDE"
+    elif [[ -n "$CUSTOM_DOCKERFILE" ]]; then
+        [[ -f "$CUSTOM_DOCKERFILE" ]] || die "dockerfile not found: $CUSTOM_DOCKERFILE"
+        echo "Building custom image from ${CUSTOM_DOCKERFILE}..."
+        docker build -t "$CUSTOM_IMAGE" -f "$CUSTOM_DOCKERFILE" "$(dirname "$CUSTOM_DOCKERFILE")"
+        IMAGE="$CUSTOM_IMAGE"
+    else
+        IMAGE="$DEFAULT_IMAGE"
+        if $FORCE_BUILD || ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+            [[ -f "$DEFAULT_DOCKERFILE" ]] || die "default Dockerfile not found: $DEFAULT_DOCKERFILE"
+            echo "Building ${IMAGE} from ${DEFAULT_DOCKERFILE}..."
+            docker build -t "$IMAGE" -f "$DEFAULT_DOCKERFILE" "$SCRIPT_DIR"
+        fi
+    fi
+}
+
+function detect_gpu() {
+    if ! $NO_GPU; then
+        if docker info 2>/dev/null | grep -qi nvidia; then
+            GPU_ARGS+=(--runtime=nvidia --gpus all)
+        else
+            echo "warning: NVIDIA runtime not detected; launching without GPU support" >&2
+        fi
+    fi
+}
+
+function detect_tty() {
+    TTY_ARGS=(-i)
+    if [[ -t 0 && -t 1 ]]; then
+        TTY_ARGS=(-it)
+    fi
+}
+
+function build_volumes() {
+    # Claude install tree (read-only — prevents self-update, preserves native install path)
+    VOLUME_ARGS+=(-v "${HOME}/.local/share/claude:${HOME}/.local/share/claude:ro")
+    VOLUME_ARGS+=(-v "${HOME}/.local/bin/claude:${HOME}/.local/bin/claude:ro")
+
+    # Claude config/auth/memory (read-write for token refresh + session persistence)
+    VOLUME_ARGS+=(-v "${HOME}/.claude:${HOME}/.claude")
+    VOLUME_ARGS+=(-v "${HOME}/.claude.json:${HOME}/.claude.json")
+
+    # UID/GID resolution
+    VOLUME_ARGS+=(-v "/etc/passwd:/etc/passwd:ro")
+    VOLUME_ARGS+=(-v "/etc/group:/etc/group:ro")
+
+    # User-specified read-write directories (mounted at same absolute path)
+    for d in "${RW_DIRS[@]}"; do
+        VOLUME_ARGS+=(-v "${d}:${d}")
+    done
+
+    # User-specified read-only directories
+    for d in "${RO_DIRS[@]}"; do
+        VOLUME_ARGS+=(-v "${d}:${d}:ro")
+    done
+}
+
+function build_claude_args() {
+    if $RESUME_CONTINUE; then
+        EXTRA_CLAUDE_ARGS+=(--continue)
+    elif [[ -n "$RESUME_ID" ]]; then
+        EXTRA_CLAUDE_ARGS+=(--resume "$RESUME_ID")
+    fi
+}
+
+function run() {
+    if [[ -z "$CONTAINER_NAME" ]]; then
+        CONTAINER_NAME="claude-docker-$$"
+    fi
+
+    CMD=(
+        docker run --rm
+        "${TTY_ARGS[@]}"
+        "${GPU_ARGS[@]}"
+        --user "$(id -u):$(id -g)"
+        --name "$CONTAINER_NAME"
+        --hostname claude-docker
+        --tmpfs /tmp:exec
+        "${VOLUME_ARGS[@]}"
+        -e "HOME=${HOME}"
+        -e "TERM=${TERM:-xterm-256color}"
+        -e "LANG=${LANG:-en_US.UTF-8}"
+        -e "GIT_CONFIG_COUNT=1"
+        -e "GIT_CONFIG_KEY_0=safe.directory"
+        -e "GIT_CONFIG_VALUE_0=*"
+        -w "$WORKDIR"
+        "$IMAGE"
+        "${CLAUDE_HOST_PATH}" "${EXTRA_CLAUDE_ARGS[@]}" "${CLAUDE_ARGS[@]}"
+    )
+
+    if $DRY_RUN; then
+        echo "${CMD[@]}"
+        exit 0
+    fi
+
+    exec "${CMD[@]}"
+}
+
+# --- Main ---
+parse_args "$@"
+validate
+determine_image
+detect_gpu
+detect_tty
+build_volumes
+build_claude_args
+run
