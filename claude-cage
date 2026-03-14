@@ -3,7 +3,7 @@ set -euo pipefail
 
 # --- Constants ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DEFAULT_DOCKERFILE="${SCRIPT_DIR}/claude-docker.Dockerfile"
+DEFAULT_DOCKERFILE="${SCRIPT_DIR}/claude-cage.Dockerfile"
 DEFAULT_IMAGE="claude-code-dev:latest"
 CUSTOM_IMAGE="claude-code-custom:latest"
 CLAUDE_HOST_PATH="${HOME}/.local/bin/claude"
@@ -25,13 +25,14 @@ FORCE_BUILD=false
 DRY_RUN=false
 WORKDIR=""
 RESUME_CONTINUE=false
+RESUME_FLAG=false
 RESUME_ID=""
 
 # --- Functions ---
 
 function usage() {
     cat <<'EOF'
-Usage: claude-docker [OPTIONS] [--] [CLAUDE_ARGS...]
+Usage: claude-cage [OPTIONS] [--] [CLAUDE_ARGS...]
 
   -w, --workdir DIR      Project directory: mounted read-write and used as working
                          directory inside the container (default: first -d dir)
@@ -49,16 +50,16 @@ Usage: claude-docker [OPTIONS] [--] [CLAUDE_ARGS...]
 
 If no -w given, the first -d directory is used as the working directory.
 If no -d given either, the current directory is used.
-Everything after -- is passed to the claude binary.
+Use -- to pass additional arguments to the claude binary.
 
 Examples:
-  claude-docker -w /path/to/project
-  claude-docker -w /path/to/proj1 -d /path/to/proj2 -- --model opus
-  claude-docker -d . -- -p "explain this codebase"
-  claude-docker -w . -r /data/shared/datasets
-  claude-docker -c -w .
-  claude-docker -R abc123 -w .
-  claude-docker -f ./Dockerfile.claude -w .
+  claude-cage -w /path/to/project
+  claude-cage -w /path/to/proj1 -d /path/to/proj2 -- --model opus
+  claude-cage -d . -- -p "explain this codebase"
+  claude-cage -w . -r /data/shared/datasets
+  claude-cage -c -w .
+  claude-cage -R abc123 -w .
+  claude-cage -f ./Dockerfile.claude -w .
 EOF
     exit 0
 }
@@ -86,6 +87,7 @@ function parse_args() {
             -c|--continue)
                 RESUME_CONTINUE=true; shift ;;
             -R|--resume)
+                RESUME_FLAG=true
                 if [[ -n "${2:-}" && "${2:0:1}" != "-" ]]; then
                     RESUME_ID="$2"; shift 2
                 else
@@ -105,7 +107,7 @@ function parse_args() {
             --)
                 shift; CLAUDE_ARGS+=("$@"); break ;;
             *)
-                CLAUDE_ARGS+=("$1"); shift ;;
+                die "unknown option: $1 (use -- to pass arguments to claude)" ;;
         esac
     done
 
@@ -139,6 +141,9 @@ function parse_args() {
     for i in "${!RO_DIRS[@]}"; do
         RO_DIRS[$i]="$(readlink -f "${RO_DIRS[$i]}")"
     done
+    if [[ -n "$CUSTOM_DOCKERFILE" ]]; then
+        CUSTOM_DOCKERFILE="$(readlink -f "$CUSTOM_DOCKERFILE")"
+    fi
 }
 
 function validate() {
@@ -153,6 +158,16 @@ function validate() {
 
     [[ -d "$WORKDIR" ]] || die "working directory does not exist: $WORKDIR"
     [[ -e "$CLAUDE_HOST_PATH" ]] || die "claude binary not found at $CLAUDE_HOST_PATH"
+    [[ -f "${HOME}/.claude.json" ]] || die "${HOME}/.claude.json not found — run claude on the host first to initialize config"
+
+    # Warn about overlapping RW/RO mounts
+    for ro in "${RO_DIRS[@]}"; do
+        for rw in "${RW_DIRS[@]}"; do
+            if [[ "$ro" == "$rw"/* || "$rw" == "$ro"/* ]]; then
+                echo "warning: overlapping mounts: rw=$rw and ro=$ro — the more specific mount takes precedence" >&2
+            fi
+        done
+    done
 }
 
 function determine_image() {
@@ -191,9 +206,9 @@ function detect_tty() {
 }
 
 function build_volumes() {
-    # Claude install tree (read-only — prevents self-update, preserves native install path)
-    VOLUME_ARGS+=(-v "${HOME}/.local/share/claude:${HOME}/.local/share/claude:ro")
-    VOLUME_ARGS+=(-v "${HOME}/.local/bin/claude:${HOME}/.local/bin/claude:ro")
+    # Claude install tree (read-write — let Claude manage its own state normally)
+    VOLUME_ARGS+=(-v "${HOME}/.local/share/claude:${HOME}/.local/share/claude")
+    VOLUME_ARGS+=(-v "${HOME}/.local/bin/claude:${HOME}/.local/bin/claude")
 
     # Claude config/auth/memory (read-write for token refresh + session persistence)
     VOLUME_ARGS+=(-v "${HOME}/.claude:${HOME}/.claude")
@@ -217,14 +232,18 @@ function build_volumes() {
 function build_claude_args() {
     if $RESUME_CONTINUE; then
         EXTRA_CLAUDE_ARGS+=(--continue)
-    elif [[ -n "$RESUME_ID" ]]; then
-        EXTRA_CLAUDE_ARGS+=(--resume "$RESUME_ID")
+    elif $RESUME_FLAG; then
+        if [[ -n "$RESUME_ID" ]]; then
+            EXTRA_CLAUDE_ARGS+=(--resume "$RESUME_ID")
+        else
+            EXTRA_CLAUDE_ARGS+=(--resume)
+        fi
     fi
 }
 
 function run() {
     if [[ -z "$CONTAINER_NAME" ]]; then
-        CONTAINER_NAME="claude-docker-$$"
+        CONTAINER_NAME="claude-cage-$$"
     fi
 
     CMD=(
@@ -233,7 +252,7 @@ function run() {
         "${GPU_ARGS[@]}"
         --user "$(id -u):$(id -g)"
         --name "$CONTAINER_NAME"
-        --hostname claude-docker
+        --hostname claude-cage
         --tmpfs /tmp:exec
         "${VOLUME_ARGS[@]}"
         -e "HOME=${HOME}"
