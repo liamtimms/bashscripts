@@ -15,6 +15,22 @@ function check_plugged_in() {
 	fi
 }
 
+function usage() {
+	cat <<'USAGE'
+Usage: archupdate [-f|-b|-o|-p|-r|-h]
+
+  -f  full    pre-checks, full paru upgrade, other tooling, then post
+  -b  basic   pre-checks then a system package upgrade only
+  -o  other   non-system components only (rust, firmware, nvim, tmux, conda)
+  -p  post    package lists, cache clean, pacdiff
+  -r  review  review pending AUR PKGBUILD diffs, then exit without upgrading
+  -h  help    this message
+
+Environment:
+  AUR_REVIEW=0   skip the AUR PKGBUILD review during -f / -b
+USAGE
+}
+
 function info() {
 	# check how many days since last update
 	last_upgrade=$(tac /var/log/pacman.log |
@@ -62,12 +78,28 @@ function update_pacman() {
 	sudo pacman -Syu
 }
 
+function review_aur() {
+	# Review pending AUR PKGBUILD diffs before anything is built.
+	# Deterministic checks hard-block; the Claude pass is advisory and prompts.
+	# Non-zero here means "do not upgrade".
+	if [ "${AUR_REVIEW:-1}" = "0" ]; then
+		echo -e "\nSkipping: AUR review (AUR_REVIEW=0)\n"
+		return 0
+	fi
+	echo -e "\nReviewing: AUR PKGBUILD diffs\n"
+	aur-review
+}
+
 function update_paru() {
 	# update repo and AUR packages with full refresh
 	echo -e "\n"
 	echo -e "Updating: Arch Linux databases and packages"
 	echo -e "\n"
 	paru --gendb
+	if ! review_aur; then
+		echo -e "\nAborted: AUR review did not pass. Nothing was upgraded.\n" >&2
+		return 1
+	fi
 	paru -Syyu --sudoloop
 }
 
@@ -129,17 +161,21 @@ function post() {
 
 function full_update() {
 	pre
-	update_paru
+	update_paru || return 1
 	update_others
 	post
 }
 
 function basic_update() {
 	pre
+	if ! review_aur; then
+		echo -e "\nAborted: AUR review did not pass. Nothing was upgraded.\n" >&2
+		return 1
+	fi
 	paru -Syu --sudoloop
 }
 
-while getopts ":hfbop" opt; do
+while getopts ":hfbopr" opt; do
 	case $opt in
 
 	h | help)
@@ -149,13 +185,13 @@ while getopts ":hfbop" opt; do
 
 	f | full)
 		# Update and clean all supported system components
-		full_update
+		full_update || exit 1
 		exit 0
 		;;
 
 	b | basic)
 		# perform preupdate functions then update only system level packages
-		basic_update
+		basic_update || exit 1
 		exit 0
 		;;
 
@@ -169,6 +205,14 @@ while getopts ":hfbop" opt; do
 		# perform cleaning functions, included in full update but not basic
 		post
 		exit 0
+		;;
+
+	r | review)
+		# Review pending AUR PKGBUILD diffs without upgrading anything.
+		# No `paru -Sy` here: it would leave a partial-upgrade state, and
+		# `paru -Qua` queries the AUR RPC rather than the pacman sync db.
+		aur-review
+		exit $?
 		;;
 
 	*)

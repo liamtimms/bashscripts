@@ -1,0 +1,76 @@
+#!/bin/bash
+# aur-gate - deterministic PKGBUILD gate, run by paru as PreBuildCommand.
+#
+# Invoked as `sh -c aur-gate` with cwd set to the package's PKGBUILD directory
+# and PKGBASE / VERSION exported. A non-zero exit aborts the build (verified
+# empirically against paru 2.1.0).
+#
+# No LLM here on purpose: this is the backstop that must not be talkable-past,
+# and it must stay fast enough to run on every build. The Claude-assisted
+# review lives in `aur-review`.
+#
+# Bypass for a single build:  AUR_GATE=0 paru -S foo
+
+set -uo pipefail
+
+[ "${AUR_GATE:-1}" = "0" ] && exit 0
+
+# shellcheck source=aur-checks.sh
+source "$(dirname "$(readlink -f "$0")")/aur-checks.sh"
+
+pkg="${PKGBASE:-$(basename "$PWD")}"
+dir="$PWD"
+
+# No git clone (paru -U, a local PKGBUILD dir, a stripped .git): the three
+# absolute checks need only the working tree, so run them rather than exiting 0.
+# Returning success here was a permanent, content-independent bypass.
+if [ ! -d "$dir/.git" ]; then
+	hits=$(
+		find "$dir" -maxdepth 3 -type f \( -name 'linter' -o -name 'hasher' \
+			-o -name 'minifier' -o -name 'validator' -o -name 'assembler' \
+			-o -name 'optimizer' \) -printf 'payload-name: %p\n' 2>/dev/null
+		find "$dir" -maxdepth 3 -type f ! -name '*.patch' ! -name '*.diff' \
+			-exec sh -c 'head -c 8000 "$1" | LC_ALL=C tr -d "\0" | wc -c | \
+			  { read a; b=$(head -c 8000 "$1" | wc -c); [ "$a" -ne "$b" ] && echo "binary: $1"; }' _ {} \; 2>/dev/null
+		[ -f "$dir/PKGBUILD" ] && command grep -nE '(^|[^[:alnum:]_])sudo([^[:alnum:]_]|$)' \
+			"$dir/PKGBUILD" 2>/dev/null | sed 's/^/sudo in PKGBUILD: /'
+	)
+	if [ -n "$hits" ]; then
+		printf '\033[1;31m╔══ aur-gate BLOCKED (no git metadata): %s\033[0m\n' "$pkg" >&2
+		printf '\033[1;31m║\033[0m %s\n' "$hits" >&2
+		printf '\033[1;31m╚══ build aborted\033[0m\n' >&2
+		exit 1
+	fi
+	printf '\033[1;33m:: aur-gate: %s has no git metadata - only absolute checks ran\033[0m\n' "$pkg" >&2
+	exit 0
+fi
+
+base=$(aur_baseline_ref "$dir" "$pkg")
+out=$(aur_run_checks "$dir" "$pkg" "$base" 2>&1)
+rc=$?
+
+blocks=$(printf '%s\n' "$out" | command grep -E '^(BLOCK|REVIEW)' || true)
+notes=$(printf '%s\n' "$out" | command grep '^NOTE' || true)
+warns=$(printf '%s\n' "$out" | command grep '^WARN' || true)
+
+if aur_is_devel "$pkg"; then
+	printf '\033[1;33m:: aur-gate: %s is a devel package - PKGBUILD review does NOT cover the\n' "$pkg" >&2
+	printf '   upstream code, which is fetched at build time.\033[0m\n' >&2
+fi
+
+[ -n "$notes" ] && printf '\033[2m%s\033[0m\n' "$notes" >&2
+[ -n "$warns" ] && printf '\033[1;33m:: %s\033[0m\n' "$warns" >&2
+
+# rc=2 means "needs judgement". aur-gate has no judgement layer, so it is
+# conservative and treats that as blocking; aur-review routes it to the LLM.
+if [ "$rc" -ne 0 ]; then
+	printf '\n\033[1;31m╔══ aur-gate BLOCKED: %s %s\033[0m\n' "$pkg" "${VERSION:-}" >&2
+	printf '\033[1;31m║\033[0m %s\n' "$(printf '%s\n' "$blocks" | sed 's/^BLOCK: //; s/^REVIEW: //')" >&2
+	printf '\033[1;31m╚══ build aborted. Inspect: git -C %s diff %s..HEAD\033[0m\n' \
+		"$dir" "${base:0:12}" >&2
+	printf '\033[2m    Override for this build only: AUR_GATE=0 paru -S %s\033[0m\n\n' "$pkg" >&2
+	exit 1
+fi
+
+printf '\033[1;32m:: aur-gate: %s %s clean\033[0m\n' "$pkg" "${VERSION:-}" >&2
+exit 0
